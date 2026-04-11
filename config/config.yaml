@@ -1,0 +1,38 @@
+data:
+  symbol: BTCUSDT
+  interval: 1d
+  start_date: "2018-01-01"
+  end_date: "2025-12-31"
+
+features:
+  window: 30
+  horizon: 5
+  columns:
+    - log_return
+    - hl_range
+    - log_rv_5d
+    - log_rv_20d
+    - log_volume
+
+splits:
+  train_end: "2021-12-31"
+  val_end: "2022-12-31"
+
+paths:
+  raw: data/raw
+  processed: data/processed
+  splits: data/splits
+  raw_filename: btcusdt_daily.csv
+  processed_filename: btcusdt_features.parquet
+  train_filename: train.parquet
+  val_filename: val.parquet
+  test_filename: test.parquet
+  scaler_filename: feature_scaler.joblib
+  train_windows_filename: train_windows.npz
+  val_windows_filename: val_windows.npz
+  test_windows_filename: test_windows.npz
+
+api:
+  base_url: https://data-api.binance.vision
+  klines_endpoint: /api/v3/klines
+  limit: 1000
