@@ -144,6 +144,12 @@ def run_LSTM_training(cfg: dict, root_dir: Path) -> dict:
 
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=float(learning_rate), weight_decay=float(weight_decay))
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer,
+        mode='min',
+        factor=cfg["training"]["scheduler_factor"],
+        patience=cfg["training"]["scheduler_patience"]
+    )
 
     best_val_loss = float("inf")
     best_epoch = 0
@@ -156,6 +162,7 @@ def run_LSTM_training(cfg: dict, root_dir: Path) -> dict:
     for epoch in range(1, max_epochs + 1):
         train_loss = train_one_epoch(model, train_loader, criterion, optimizer, device)
         val_loss = evaluate(model, val_loader, criterion, device)
+        scheduler.step(val_loss)
 
         train_losses.append(train_loss)
         val_losses.append(val_loss)
@@ -187,7 +194,7 @@ def run_LSTM_training(cfg: dict, root_dir: Path) -> dict:
             print(f"Early stopping triggered at epoch {epoch}.")
             break
 
-    checkpoint = torch.load(checkpoint_path, map_location=device)
+    checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=True)
     model.load_state_dict(checkpoint["model_state_dict"])
 
     y_test_pred, y_test_true = predict(model, test_loader, device)

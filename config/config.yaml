@@ -19,17 +19,19 @@ splits:
   val_end: "2022-12-31"
 
 training:
-  batch_size: 32
-  hidden_size: 32
+  batch_size: 64
+  hidden_size: 64
   num_layers: 1
-  dense_size: 16
+  dense_size: 32
   dropout: 0.0
-  learning_rate: 5e-4
+  learning_rate: 1e-3
   weight_decay: 1e-4
   max_epochs: 200
   patience: 20
   seed: 42
   num_workers: 0
+  scheduler_patience: 7
+  scheduler_factor: 0.5
 
 paths:
   raw: data/raw
