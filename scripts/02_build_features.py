@@ -15,11 +15,11 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
     sys.path.append(str(ROOT_DIR))
 
-from data.download import load_config
-from data.features import load_raw_data, build_features
-from data.target import add_future_vol_target, build_final_dataset, save_final_dataset
-from data.splits import split_masks, fit_feature_scaler, transform_features
-from data.splits import save_parquet, save_scaler, build_window_dataset, save_window_dataset
+from src.data.download import load_config
+from src.data.features import load_raw_data, build_features
+from src.data.target import add_future_vol_target, build_final_dataset, save_final_dataset
+from src.data.splits import split_masks, fit_feature_scaler, transform_features
+from src.data.splits import save_parquet, save_scaler, build_window_dataset, save_window_dataset
 
 CONFIG_PATH = ROOT_DIR / "config" / "config.yaml"
 

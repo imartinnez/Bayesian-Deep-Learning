@@ -18,6 +18,19 @@ splits:
   train_end: "2021-12-31"
   val_end: "2022-12-31"
 
+training:
+  batch_size: 32
+  hidden_size: 32
+  num_layers: 1
+  dense_size: 16
+  dropout: 0.0
+  learning_rate: 5e-4
+  weight_decay: 1e-4
+  max_epochs: 200
+  patience: 20
+  seed: 42
+  num_workers: 0
+
 paths:
   raw: data/raw
   processed: data/processed
@@ -31,6 +44,11 @@ paths:
   train_windows_filename: train_windows.npz
   val_windows_filename: val_windows.npz
   test_windows_filename: test_windows.npz
+  models: outputs/models
+  figures: outputs/figures
+  baseline_checkpoint: LSTM.pt
+  loss_curve_filename: LSTM_loss_curve.png
+  pred_plot_filename: LSTM_pred_vs_real.png
 
 api:
   base_url: https://data-api.binance.vision

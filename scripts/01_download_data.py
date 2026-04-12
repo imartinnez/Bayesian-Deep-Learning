@@ -12,8 +12,8 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
     sys.path.append(str(ROOT_DIR))
 
-from data.download import load_config, date_to_ms, download_klines
-from data.download import klines_to_dataframe, filter_date_range, save_raw_dataframe
+from src.data.download import load_config, date_to_ms, download_klines
+from src.data.download import klines_to_dataframe, filter_date_range, save_raw_dataframe
 
 CONFIG_PATH = ROOT_DIR / "config" / "config.yaml"
 
