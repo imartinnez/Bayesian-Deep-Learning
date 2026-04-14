@@ -30,8 +30,11 @@ training:
   patience: 20
   seed: 42
   num_workers: 0
-  scheduler_patience: 7
   scheduler_factor: 0.5
+  scheduler_patience: 5
+
+inference:
+  mc_samples: 100
 
 paths:
   raw: data/raw
@@ -51,6 +54,9 @@ paths:
   baseline_checkpoint: LSTM.pt
   loss_curve_filename: LSTM_loss_curve.png
   pred_plot_filename: LSTM_pred_vs_real.png
+  bayesian_checkpoint: Bayesian_LSTM.pt
+  bayesian_loss_curve_filename: Bayesian_LSTM_loss_curve.png
+  bayesian_pred_plot_filename: Bayesian_LSTM_pred_vs_real.png
 
 api:
   base_url: https://data-api.binance.vision
