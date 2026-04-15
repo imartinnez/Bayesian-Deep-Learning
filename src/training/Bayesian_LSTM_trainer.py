@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader
 from src.data.dataset import WindowedTimeSeriesDataset
 from src.models.Bayesian_LSTM import BayesianLSTM
 from src.training.loss import heteroscedastic_gaussian_nll
+from src.evaluation.uncertainty import decompose_uncertainty
 from src.evaluation.metrics import compute_regression_metrics, compute_mean_baseline_metrics
 from src.visualization.plots import save_loss_curve, save_prediction_plot
 
@@ -23,36 +24,6 @@ def set_seed(seed: int) -> None:
 
 def make_dataloader(dataset: WindowedTimeSeriesDataset, batch_size: int, shuffle: bool, num_workers: int) -> DataLoader:
     return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers)
-
-def decompose_uncertainty(mu_samples: np.ndarray, sigma2_samples: np.ndarray) -> dict:
-    """
-    Decompose predictive uncertainty into epistemic, aleatoric, and total parts.
-
-    Args:
-        mu_samples: Array of shape (T, batch)
-        sigma2_samples: Array of shape (T, batch)
-
-    Returns:
-        Dictionary with:
-            predictive_mean: mean of mu samples
-            epistemic_uncertainty: variance of mu samples
-            aleatoric_uncertainty: mean of predicted variances
-            total_uncertainty: epistemic + aleatoric
-            predictive_std: sqrt(total_uncertainty)
-    """
-    predictive_mean = mu_samples.mean(axis=0)
-    epistemic_uncertainty = mu_samples.var(axis=0)
-    aleatoric_uncertainty = sigma2_samples.mean(axis=0)
-    total_uncertainty = epistemic_uncertainty + aleatoric_uncertainty
-    predictive_std = np.sqrt(total_uncertainty)
-
-    return {
-        "predictive_mean": predictive_mean,
-        "epistemic_uncertainty": epistemic_uncertainty,
-        "aleatoric_uncertainty": aleatoric_uncertainty,
-        "total_uncertainty": total_uncertainty,
-        "predictive_std": predictive_std,
-    }
 
 
 def enable_dropout(model: nn.Module) -> None:
@@ -208,7 +179,7 @@ def run_Bayesian_LSTM_training(cfg: dict, root_dir: Path) -> dict:
     hidden_size = cfg["training"]["hidden_size"]
     num_layers = cfg["training"]["num_layers"]
     dense_size = cfg["training"]["dense_size"]
-    dropout = cfg["training"]["dropout"]
+    dropout = cfg["training"]["bayesian_dropout"]
     learning_rate = cfg["training"]["learning_rate"]
     weight_decay = cfg["training"]["weight_decay"]
     max_epochs = cfg["training"]["max_epochs"]
