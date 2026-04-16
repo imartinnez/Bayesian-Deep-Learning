@@ -1,9 +1,9 @@
 from pathlib import Path
-
+from scipy.optimize import minimize_scalar
 import matplotlib.pyplot as plt
 import numpy as np
 
-from src.evaluation.metrics import build_gaussian_interval, compute_coverage
+from src.evaluation.metrics import build_gaussian_interval, compute_coverage, compute_nll
 
 
 def _default_levels() -> tuple[float, ...]:
@@ -38,6 +38,16 @@ def compute_calibration_data(
         "empirical": empirical,
     }
 
+def calibrate_temperature(
+        y_true: np.ndarray,
+        predictive_mean: np.ndarray,
+        predictive_std: np.ndarray,
+        bounds: tuple[float, float] = (0.1, 10),
+) -> float:
+    result = minimize_scalar(lambda tau: compute_nll(y_true, predictive_mean, predictive_std / tau),
+                             bounds=bounds,
+                             method="Bounded")
+    return float(result.x)
 
 def plot_calibration(
     calibration_data: dict,

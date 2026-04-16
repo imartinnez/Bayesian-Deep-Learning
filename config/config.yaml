@@ -21,14 +21,14 @@ splits:
 training:
   batch_size: 64
   hidden_size: 64
-  num_layers: 1
+  num_layers: 2
   dense_size: 32
   dropout: 0.0
-  bayesian_dropout: 0.2
-  learning_rate: 1e-3
+  bayesian_dropout: 0.3
+  learning_rate: 5e-4
   weight_decay: 1e-4
   max_epochs: 200
-  patience: 20
+  patience: 30
   seed: 42
   num_workers: 0
   scheduler_factor: 0.5

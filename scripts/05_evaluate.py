@@ -22,7 +22,7 @@ from src.evaluation.metrics import (
     compute_coverage,
     compute_sharpness,
 )
-from src.evaluation.calibration import compute_calibration_data, plot_calibration
+from src.evaluation.calibration import compute_calibration_data, plot_calibration, calibrate_temperature
 from src.evaluation.regimes import classify_regimes, evaluate_by_regime
 
 
@@ -158,6 +158,22 @@ if __name__ == "__main__":
     y_test = bayes_results["y_true"]
     mu_bayes = bayes_results["predictive_mean"]
     sigma_bayes = bayes_results["predictive_std"]
+
+    bayes_val_results = predict_bayesian(
+        model=bayesian_model,
+        loader=val_loader,
+        device=device,
+        T=mc_samples,
+    )
+
+    tau = calibrate_temperature(
+        y_true=bayes_val_results["y_true"],
+        predictive_mean=bayes_val_results["predictive_mean"],
+        predictive_std=bayes_val_results["predictive_std"],
+    )
+    
+    print(f"Temperature scaling tau: {tau:.4f}")
+    sigma_bayes = sigma_bayes/tau
 
     bayesian_global_metrics = compute_probabilistic_metrics(
         y_true=y_test,

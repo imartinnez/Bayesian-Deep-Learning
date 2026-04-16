@@ -62,6 +62,7 @@ def train_one_epoch(
         loss = criterion(mu, logvar, y)
 
         loss.backward()
+        nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
         optimizer.step()
 
         batch_size = X.size(0)
@@ -127,7 +128,7 @@ def predict(
             mu, logvar = model(X)
             mu = mu.squeeze(-1)
             logvar = logvar.squeeze(-1)
-
+            
             sigma2 = torch.exp(logvar)
 
             mu_samples.append(mu.cpu().numpy())
