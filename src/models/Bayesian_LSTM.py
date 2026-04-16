@@ -21,6 +21,7 @@ class BayesianLSTM(nn.Module):
 
         self.fc_mu = nn.Linear(dense, 1)
         self.fc_logvar = nn.Linear(dense, 1)
+        nn.init.constant_(self.fc_logvar.bias, -1.2)
 
     def forward(self, x):
         # h_n: estado oculto final de la LSTM
