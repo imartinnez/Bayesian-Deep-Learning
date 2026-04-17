@@ -15,11 +15,12 @@ class BayesianLSTM(nn.Module):
         )
 
         self.dropout = nn.Dropout(dropout)
-
-        self.fc1  = nn.Linear(hidden, dense)
         self.relu = nn.ReLU()
 
+        self.fc_mu_hidden = nn.Linear(hidden, dense)
         self.fc_mu = nn.Linear(dense, 1)
+
+        self.fc_logvar_hidden = nn.Linear(hidden, dense)
         self.fc_logvar = nn.Linear(dense, 1)
         nn.init.constant_(self.fc_logvar.bias, -1.2)
 
@@ -28,10 +29,16 @@ class BayesianLSTM(nn.Module):
         # forma: (num_layers, batch, hidden)
         _, (h_n, _) = self.lstm(x)
         h = h_n[-1]
+        h = self.dropout(h)
 
-        h = self.dropout(h)
-        h = self.relu(self.fc1(h))
-        h = self.dropout(h)
+        h_mu = self.relu(self.fc_mu_hidden(h))
+        h_mu = self.dropout(h_mu)
+        mu = self.fc_mu(h_mu)
+
+
+        h_logvar = self.relu(self.fc_logvar_hidden(h))
+        h_logvar = self.dropout(h_logvar)
+        logvar = self.fc_logvar(h_logvar)
 
         # salida final (batch, 1)
-        return self.fc_mu(h), self.fc_logvar(h)
+        return mu, logvar

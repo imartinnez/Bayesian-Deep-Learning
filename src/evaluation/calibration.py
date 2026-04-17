@@ -42,9 +42,19 @@ def calibrate_temperature(
         y_true: np.ndarray,
         predictive_mean: np.ndarray,
         predictive_std: np.ndarray,
+        target_coverage: float = 0.90,
         bounds: tuple[float, float] = (0.1, 10),
 ) -> float:
-    result = minimize_scalar(lambda tau: compute_nll(y_true, predictive_mean, predictive_std / tau),
+    def coverage_error(tau):
+        lower, upper = build_gaussian_interval(
+            y_mean=predictive_mean,
+            y_std=predictive_std / tau,
+            level=target_coverage,
+        )
+        empirical = compute_coverage(y_true, lower, upper)
+        return (empirical - target_coverage)**2
+
+    result = minimize_scalar(coverage_error,
                              bounds=bounds,
                              method="Bounded")
     return float(result.x)
