@@ -1,0 +1,31 @@
+{
+    "device": "cpu",
+    "train_samples": 1412,
+    "validation_samples": 365,
+    "test_samples": 730,
+    "train_shape": [
+        1412,
+        30,
+        8
+    ],
+    "validation_shape": [
+        365,
+        30,
+        8
+    ],
+    "test_shape": [
+        730,
+        30,
+        8
+    ],
+    "best_epoch": 12,
+    "best_validation_nll": 1.0778960094059984,
+    "checkpoint_path": "C:\\Users\\i.martinez.jimenez\\OneDrive - Accenture\\Documents\\projects-personales\\BNN\\outputs\\models\\lstm\\Bayesian_LSTM.pt",
+    "loss_curve_path": "C:\\Users\\i.martinez.jimenez\\OneDrive - Accenture\\Documents\\projects-personales\\BNN\\outputs\\figures\\lstm\\Bayesian_LSTM_loss_curve.png",
+    "prediction_plot_path": "C:\\Users\\i.martinez.jimenez\\OneDrive - Accenture\\Documents\\projects-personales\\BNN\\outputs\\figures\\lstm\\Bayesian_LSTM_pred_vs_real.png",
+    "test_metrics": {
+        "mse": 1.7291439810269855,
+        "rmse": 1.314969193945997,
+        "mae": 1.0236775007051966
+    }
+}

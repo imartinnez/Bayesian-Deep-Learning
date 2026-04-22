@@ -1,0 +1,106 @@
+{
+    "device": "cpu",
+    "temperature_scaling_tau": 1.1384919249790235,
+    "train_samples": 1412,
+    "validation_samples": 365,
+    "test_samples": 730,
+    "train_shape": [
+        1412,
+        30,
+        8
+    ],
+    "validation_shape": [
+        365,
+        30,
+        8
+    ],
+    "test_shape": [
+        730,
+        30,
+        8
+    ],
+    "bayesian": {
+        "best_epoch": 12,
+        "best_validation_nll": 1.0778960094059984,
+        "checkpoint_path": "C:\\Users\\i.martinez.jimenez\\OneDrive - Accenture\\Documents\\projects-personales\\BNN\\outputs\\models\\lstm\\Bayesian_LSTM.pt",
+        "calibration_plot_path": "C:\\Users\\i.martinez.jimenez\\OneDrive - Accenture\\Documents\\projects-personales\\BNN\\outputs\\figures\\lstm\\bayesian_calibration_plot.png",
+        "global_metrics": {
+            "rmse": 1.3203572839583244,
+            "mae": 1.0301846709839286,
+            "coverage": 0.9726027397260274,
+            "nll": 1.7104824324842456,
+            "crps": 0.7314982539066797,
+            "sharpness": 5.808588801056778,
+            "coverage_80": 0.8849315068493151,
+            "coverage_90": 0.9561643835616438,
+            "coverage_95": 0.9726027397260274,
+            "sharpness_90": 4.8747213888882
+        },
+        "regime_metrics": {
+            "LOW": {
+                "n_obs": 315,
+                "coverage_90": 0.9015873015873016,
+                "crps": 0.8309028991470151,
+                "sharpness_90": 4.909412821799011,
+                "nll": 1.8666878133098974
+            },
+            "MED": {
+                "n_obs": 261,
+                "coverage_90": 1.0,
+                "crps": 0.47675143078664384,
+                "sharpness_90": 4.862965798670044,
+                "nll": 1.4208951696334602
+            },
+            "HIGH": {
+                "n_obs": 154,
+                "coverage_90": 0.9935064935064936,
+                "crps": 0.9599168096444957,
+                "sharpness_90": 4.823685075122183,
+                "nll": 1.881765423678887
+            }
+        }
+    },
+    "baseline": {
+        "best_epoch": 3,
+        "best_validation_loss": 1.8005370995769763,
+        "checkpoint_path": "C:\\Users\\i.martinez.jimenez\\OneDrive - Accenture\\Documents\\projects-personales\\BNN\\outputs\\models\\lstm\\LSTM.pt",
+        "constant_sigma_from_validation": 1.341324806213379,
+        "calibration_plot_path": "C:\\Users\\i.martinez.jimenez\\OneDrive - Accenture\\Documents\\projects-personales\\BNN\\outputs\\figures\\lstm\\baseline_calibration_plot.png",
+        "global_metrics": {
+            "rmse": 1.35832977418511,
+            "mae": 1.0102656955588354,
+            "coverage": 0.947945205479452,
+            "nll": 1.7253544232841194,
+            "crps": 0.7352728856961567,
+            "sharpness": 5.2578966234967766,
+            "coverage_80": 0.8424657534246576,
+            "coverage_90": 0.9232876712328767,
+            "coverage_95": 0.947945205479452,
+            "sharpness_90": 4.412565944840111,
+            "sigma_constant": 1.341324806213379
+        },
+        "regime_metrics": {
+            "LOW": {
+                "n_obs": 315,
+                "coverage_90": 0.8222222222222222,
+                "crps": 1.036394651253311,
+                "sharpness_90": 4.412565944840111,
+                "nll": 2.1431174923317946
+            },
+            "MED": {
+                "n_obs": 261,
+                "coverage_90": 1.0,
+                "crps": 0.35719120081396055,
+                "sharpness_90": 4.412565944840111,
+                "nll": 1.2541232288313775
+            },
+            "HIGH": {
+                "n_obs": 154,
+                "coverage_90": 1.0,
+                "crps": 0.7601168052010238,
+                "sharpness_90": 4.412565944840111,
+                "nll": 1.6694841310902753
+            }
+        }
+    }
+}

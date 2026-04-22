@@ -6,13 +6,16 @@ data:
 
 features:
   window: 30
-  horizon: 5
+  horizon: 1
   columns:
     - log_return
     - hl_range
+    - log_rv_1d
     - log_rv_5d
     - log_rv_20d
     - log_volume
+    - log_rv_ratio_5_20
+    - log_rv_5d_change
 
 splits:
   train_end: "2021-12-31"
@@ -37,7 +40,64 @@ training:
 inference:
   mc_samples: 100
 
+classification:
+  low_pct: 33
+  high_pct: 67
+  n_classes: 3
+
+classifier_training:
+  batch_size: 64
+  hidden_size: 64
+  num_layers: 2
+  dense_size: 32
+  dropout: 0.0
+  bayesian_dropout: 0.1
+  learning_rate: 1e-3
+  weight_decay: 1e-4
+  max_epochs: 200
+  patience: 30
+  seed: 42
+  num_workers: 0
+  scheduler_factor: 0.5
+  scheduler_patience: 5
+
+classifier_inference:
+  mc_samples: 100
+
+har:
+  features:
+    - log_rv_1d_har
+    - log_rv_5d_har
+    - log_rv_22d_har
+    - log_return
+    - log_return_5d
+    - hl_range
+    - log_volume
+  horizon: 1
+  target_col: target_har
+  epsilon_squared_return: 1.0e-12
+  regime_thresholds_percentiles: [33, 67]
+
+har_training:
+  batch_size: 64
+  hidden_size: 64
+  dense_size: 32
+  dropout: 0.2
+  bayesian_dropout: 0.2
+  learning_rate: 1.0e-3
+  weight_decay: 1.0e-4
+  max_epochs: 300
+  patience: 30
+  seed: 42
+  num_workers: 0
+  scheduler_factor: 0.5
+  scheduler_patience: 10
+
+har_inference:
+  mc_samples: 100
+
 paths:
+  # ── datos compartidos ─────────────────────────────────────
   raw: data/raw
   processed: data/processed
   splits: data/splits
@@ -47,17 +107,57 @@ paths:
   val_filename: val.parquet
   test_filename: test.parquet
   scaler_filename: feature_scaler.joblib
+
+  # ── pipeline 1: LSTM regresión ───────────────────────────
+  lstm_models: outputs/models/lstm
+  lstm_figures: outputs/figures/lstm
+  lstm_results: outputs/results/lstm
   train_windows_filename: train_windows.npz
   val_windows_filename: val_windows.npz
   test_windows_filename: test_windows.npz
-  models: outputs/models
-  figures: outputs/figures
   baseline_checkpoint: LSTM.pt
+  bayesian_checkpoint: Bayesian_LSTM.pt
   loss_curve_filename: LSTM_loss_curve.png
   pred_plot_filename: LSTM_pred_vs_real.png
-  bayesian_checkpoint: Bayesian_LSTM.pt
   bayesian_loss_curve_filename: Bayesian_LSTM_loss_curve.png
   bayesian_pred_plot_filename: Bayesian_LSTM_pred_vs_real.png
+  baseline_calibration_plot_filename: baseline_calibration_plot.png
+  bayesian_calibration_plot_filename: bayesian_calibration_plot.png
+  evaluation_results_filename: evaluation_results.json
+  bayesian_train_results_filename: bayesian_train_results.json
+
+  # ── pipeline 2: LSTM clasificador ────────────────────────
+  clf_models: outputs/models/lstm_clf
+  clf_figures: outputs/figures/lstm_clf
+  clf_results: outputs/results/lstm_clf
+  train_clf_windows_filename: train_windows_clf.npz
+  val_clf_windows_filename: val_windows_clf.npz
+  test_clf_windows_filename: test_windows_clf.npz
+  clf_thresholds_filename: clf_thresholds.json
+  baseline_clf_checkpoint: LSTM_classifier.pt
+  bayesian_clf_checkpoint: Bayesian_LSTM_classifier.pt
+  baseline_clf_loss_curve_filename: LSTM_classifier_loss_curve.png
+  bayesian_clf_loss_curve_filename: Bayesian_LSTM_classifier_loss_curve.png
+
+  # ── pipeline 3: MLP HAR ───────────────────────────────────
+  har_models: outputs/models/mlp_har
+  har_figures: outputs/figures/mlp_har
+  har_results: outputs/results/mlp_har
+  har_dir: data/har
+  har_train_filename: har_train.npz
+  har_val_filename: har_val.npz
+  har_test_filename: har_test.npz
+  har_feature_scaler_filename: har_feature_scaler.joblib
+  har_thresholds_filename: har_thresholds.json
+  mlp_baseline_checkpoint: MLP_baseline.pt
+  bayesian_mlp_checkpoint: Bayesian_MLP.pt
+  mlp_baseline_loss_curve: MLP_baseline_loss_curve.png
+  bayesian_mlp_loss_curve: Bayesian_MLP_loss_curve.png
+  mlp_baseline_pred_plot: MLP_baseline_pred_vs_real.png
+  bayesian_mlp_pred_plot: Bayesian_MLP_pred_vs_real.png
+  mlp_baseline_calibration_plot: MLP_baseline_calibration_plot.png
+  bayesian_mlp_calibration_plot: Bayesian_MLP_calibration_plot.png
+  har_evaluation_results: evaluation_results_har.json
 
 api:
   base_url: https://data-api.binance.vision

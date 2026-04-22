@@ -151,3 +151,32 @@ def save_final_dataset(df: pd.DataFrame, output_path: Path) -> Path:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_parquet(output_path, index=False)
     return output_path
+
+def build_regime_labels(
+    df: pd.DataFrame,
+    train_target: np.ndarray,
+    target_col: str = "target",
+    low_pct: float = 33,
+    high_pct: float = 67,
+) -> tuple[pd.DataFrame, dict]:
+    train_target = np.asarray(train_target, dtype=float)
+
+    low_threshold = float(np.percentile(train_target, low_pct))
+    high_threshold = float(np.percentile(train_target, high_pct))
+
+    df = df.copy()
+
+    labels = np.ones(len(df), dtype=np.int64)
+    labels[df[target_col].to_numpy() <= low_threshold] = 0
+    labels[df[target_col].to_numpy() >= high_threshold] = 2
+
+    df["label"] = labels
+
+    thresholds = {
+        "low_pct": low_pct,
+        "high_pct": high_pct,
+        "low_threshold": low_threshold,
+        "high_threshold": high_threshold,
+    }
+
+    return df, thresholds

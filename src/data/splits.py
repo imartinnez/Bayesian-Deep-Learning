@@ -8,6 +8,7 @@ import joblib
 import numpy as np
 import pandas as pd
 import yaml
+import json
 from sklearn.preprocessing import StandardScaler
 
 # We resolve the project root relative to this file for consistent path handling.
@@ -194,3 +195,60 @@ def describe_windows(X: np.ndarray, y: np.ndarray, dates: np.ndarray, split_name
     print(f"{split_name} first target date: {dates[0]}")
     print(f"{split_name} last target date: {dates[-1]}")
     print(f"{split_name} window length: {window}")
+
+def build_window_dataset_clf(
+    full_df: pd.DataFrame,
+    target_indices: np.ndarray,
+    feature_cols: list[str],
+    target_col: str,
+    label_col: str,
+    window: int,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    x_list = []
+    y_label_list = []
+    y_cont_list = []
+    date_list = []
+
+    for idx in target_indices:
+        if idx < window - 1:
+            continue
+
+        start_idx = idx - window + 1
+        x_window = full_df.loc[start_idx:idx, feature_cols].to_numpy(dtype=np.float32)
+        y_label = int(full_df.loc[idx, label_col])
+        y_cont = np.float32(full_df.loc[idx, target_col])
+        date_value = full_df.loc[idx, "date"].strftime("%Y-%m-%d")
+
+        x_list.append(x_window)
+        y_label_list.append(y_label)
+        y_cont_list.append(y_cont)
+        date_list.append(date_value)
+
+    if not x_list:
+        raise ValueError("No windows could be created for this split.")
+
+    X = np.stack(x_list)
+    y_label = np.array(y_label_list, dtype=np.int64)
+    y_continuous = np.array(y_cont_list, dtype=np.float32)
+    dates = np.array(date_list)
+
+    return X, y_label, y_continuous, dates
+
+
+def save_window_dataset_clf(
+    X: np.ndarray,
+    y_label: np.ndarray,
+    y_continuous: np.ndarray,
+    dates: np.ndarray,
+    output_path: Path,
+) -> Path:
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    np.savez_compressed(output_path, X=X, y_label=y_label, y_continuous=y_continuous, dates=dates)
+    return output_path
+
+
+def save_thresholds(thresholds: dict, output_path: Path) -> Path:
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(thresholds, f, indent=2)
+    return output_path

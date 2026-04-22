@@ -100,8 +100,8 @@ def predict(model: nn.Module, loader: DataLoader, device: torch.device) -> tuple
 
 def run_LSTM_training(cfg: dict, root_dir: Path) -> dict:
     splits_dir = root_dir / cfg["paths"]["splits"]
-    models_dir = root_dir / cfg["paths"]["models"]
-    figures_dir = root_dir / cfg["paths"]["figures"]
+    models_dir = root_dir / cfg["paths"]["lstm_models"]
+    figures_dir = root_dir / cfg["paths"]["lstm_figures"]
 
     train_windows_path = splits_dir / cfg["paths"]["train_windows_filename"]
     val_windows_path = splits_dir / cfg["paths"]["val_windows_filename"]

@@ -89,6 +89,18 @@ def add_log_volume(df: pd.DataFrame) -> pd.DataFrame:
     df["log_volume"] = np.log(df["volume"].where(df["volume"] > 0))
     return df
 
+def add_log_rv_ratio(df: pd.DataFrame, short_window: int = 5, long_window: int = 20) -> pd.DataFrame:
+    short_col = f"log_rv_{short_window}d"
+    long_col = f"log_rv_{long_window}d"
+    df["log_rv_ratio_5_20"] = df[short_col] - df[long_col]
+    return df
+
+
+def add_log_rv_change(df: pd.DataFrame, window: int = 5, lag: int = 5) -> pd.DataFrame:
+    col = f"log_rv_{window}d"
+    df["log_rv_5d_change"] = df[col] - df[col].shift(lag)
+    return df
+
 
 def build_features(df: pd.DataFrame, feature_names: list[str]) -> pd.DataFrame:
     # We work on a copy so that the raw DataFrame passed in by the caller
@@ -110,6 +122,12 @@ def build_features(df: pd.DataFrame, feature_names: list[str]) -> pd.DataFrame:
     for feature in rv_features:
         window = int(feature.replace("log_rv_", "").replace("d", ""))
         df = add_log_rv(df, window=window)
+
+    if "log_rv_ratio_5_20" in feature_names:
+        df = add_log_rv_ratio(df, short_window=5, long_window=20)
+
+    if "log_rv_5d_change" in feature_names:
+        df = add_log_rv_change(df, window=5, lag=5)
 
     if "log_volume" in feature_names:
         df = add_log_volume(df)

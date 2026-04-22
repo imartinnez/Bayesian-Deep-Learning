@@ -1,4 +1,6 @@
 import torch
+import torch.nn.functional as F
+
 
 def heteroscedastic_gaussian_nll(
     mu: torch.Tensor,
@@ -23,3 +25,11 @@ def heteroscedastic_gaussian_nll(
         return loss.sum()
     
     return loss
+
+def cross_entropy_with_weights(
+    logits: torch.Tensor,
+    labels: torch.Tensor,
+    class_weights: torch.Tensor | None = None,
+    reduction: str = "mean",
+) -> torch.Tensor:
+    return F.cross_entropy(logits, labels, weight=class_weights, reduction=reduction)

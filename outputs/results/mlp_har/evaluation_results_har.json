@@ -1,0 +1,135 @@
+{
+    "device": "cpu",
+    "temperature_scaling_tau": 1.1463783322799437,
+    "train_samples": 1420,
+    "validation_samples": 365,
+    "test_samples": 729,
+    "validation_gate": {
+        "check1_rmse_ratio": 1.0060000527683146,
+        "check1_pass": false,
+        "check2_nll_model": 2.4051465080535674,
+        "check2_nll_constant": 2.4028642852104416,
+        "check2_pass": false,
+        "check3_cv_std": 0.11407651243771492,
+        "check3_pass": true,
+        "check4_spearman": 0.11737501463528864,
+        "check4_pass": true,
+        "all_pass": false
+    },
+    "baseline": {
+        "best_epoch": 120,
+        "best_val_loss": 7.333552334406605,
+        "sigma_constant": 2.7066917419433594,
+        "global_metrics": {
+            "rmse": 2.707276535729484,
+            "mae": 2.0574440799132296,
+            "coverage": 0.9478737997256516,
+            "nll": 2.414881741087811,
+            "crps": 1.4765981764851173,
+            "sharpness": 10.610036662921928,
+            "coverage_80": 0.8340192043895748,
+            "coverage_90": 0.9190672153635117,
+            "coverage_95": 0.9478737997256516,
+            "sharpness_80": 6.937530078668309,
+            "sharpness_90": 8.90422345755026,
+            "sharpness_95": 10.610036662921928,
+            "sigma_constant": 2.7066917419433594
+        },
+        "regime_metrics": {
+            "LOW": {
+                "n_obs": 315,
+                "coverage_90": 0.8444444444444444,
+                "crps": 1.9207157238509702,
+                "sharpness_90": 8.90422345755026,
+                "nll": 2.727578105769556
+            },
+            "MED": {
+                "n_obs": 264,
+                "coverage_90": 1.0,
+                "crps": 0.8124051228558353,
+                "sharpness_90": 8.90422345755026,
+                "nll": 2.0013210571172264
+            },
+            "HIGH": {
+                "n_obs": 150,
+                "coverage_90": 0.9333333333333333,
+                "crps": 1.7129311014043618,
+                "sharpness_90": 8.904223457550263,
+                "nll": 2.4860861790443747
+            }
+        }
+    },
+    "bayesian": {
+        "best_epoch": 81,
+        "best_val_nll": 1.4752365954934734,
+        "global_metrics": {
+            "rmse": 2.6745583087014406,
+            "mae": 2.049848265968396,
+            "coverage": 0.9519890260631001,
+            "nll": 2.4051465080535674,
+            "crps": 1.4605506069850287,
+            "sharpness": 10.501416037369033,
+            "coverage_80": 0.8353909465020576,
+            "coverage_90": 0.9327846364883402,
+            "coverage_95": 0.9519890260631001,
+            "sharpness_80": 6.8665068691472335,
+            "sharpness_90": 8.813066155012201,
+            "sharpness_95": 10.501416037369033
+        },
+        "regime_metrics": {
+            "LOW": {
+                "n_obs": 315,
+                "coverage_90": 0.8507936507936508,
+                "crps": 1.8272090214201946,
+                "sharpness_90": 8.775210475423602,
+                "nll": 2.7052349312258013
+            },
+            "MED": {
+                "n_obs": 264,
+                "coverage_90": 1.0,
+                "crps": 0.8381274722672825,
+                "sharpness_90": 8.83820423884835,
+                "nll": 1.9972828308543067
+            },
+            "HIGH": {
+                "n_obs": 150,
+                "coverage_90": 0.9866666666666667,
+                "crps": 1.786032653774413,
+                "sharpness_90": 8.848320054596638,
+                "nll": 2.4928008912625743
+            }
+        }
+    },
+    "semaphore": {
+        "thresholds": {
+            "q33": -7.95768752933245,
+            "q67": -7.408145482501282
+        },
+        "signal_counts": {
+            "VERDE": 369,
+            "AMARILLO": 259,
+            "ROJO": 101
+        },
+        "signal_vol_stats": {
+            "VERDE": {
+                "n": 369,
+                "mean_logvol": -9.389058113098145,
+                "std_logvol": 2.6991617679595947
+            },
+            "AMARILLO": {
+                "n": 259,
+                "mean_logvol": -9.479216575622559,
+                "std_logvol": 2.6069397926330566
+            },
+            "ROJO": {
+                "n": 101,
+                "mean_logvol": -8.553112983703613,
+                "std_logvol": 2.5105791091918945
+            }
+        }
+    },
+    "backtest": {
+        "sharpe": 0.5617180776879962,
+        "max_drawdown": -28.24110642076994
+    }
+}

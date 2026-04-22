@@ -1,0 +1,96 @@
+{
+  "device": "cpu",
+  "test_samples": 730,
+  "sanity_checks_passed": false,
+  "bayesian": {
+    "best_epoch": 10,
+    "best_val_ce": 1.1071937753729624,
+    "temperature_tau": 4.958699164764153,
+    "ece": 0.08029516922971575,
+    "global_metrics": {
+      "accuracy": 0.43424657534246575,
+      "balanced_accuracy": 0.3600056143402582,
+      "macro_f1": 0.30937697584948526,
+      "weighted_f1": 0.3547021887741651,
+      "log_loss": 1.0811156741707837,
+      "brier_score": 0.6550140710010951,
+      "confusion_matrix": [
+        [
+          270,
+          22,
+          24
+        ],
+        [
+          211,
+          31,
+          27
+        ],
+        [
+          110,
+          19,
+          16
+        ]
+      ],
+      "precision_LOW": 0.45685279187817257,
+      "recall_LOW": 0.8544303797468354,
+      "f1_LOW": 0.5953693495038589,
+      "precision_MED": 0.4305555555555556,
+      "recall_MED": 0.11524163568773234,
+      "f1_MED": 0.18181818181818182,
+      "precision_HIGH": 0.23880597014925373,
+      "recall_HIGH": 0.1103448275862069,
+      "f1_HIGH": 0.1509433962264151,
+      "roc_auc_ovr": 0.5704321483576122
+    },
+    "uncertainty_metrics": {
+      "H_total_mean": 1.0567041613861432,
+      "H_total_std": 0.0443392502673895,
+      "H_total_cv": 0.0419599466791415,
+      "corr_H_error": 0.15400873563395043,
+      "auroc_H_as_error_det": 0.5744303816805554,
+      "acc_low_uncertainty_q1": 0.5683060109289617,
+      "acc_high_uncertainty_q4": 0.3989071038251366
+    }
+  },
+  "baseline": {
+    "best_epoch": 24,
+    "best_val_ce": 1.0977908848083182,
+    "temperature_tau": 1.802658739447269,
+    "ece": 0.04462991846750862,
+    "global_metrics": {
+      "accuracy": 0.42876712328767125,
+      "balanced_accuracy": 0.3761054111314302,
+      "macro_f1": 0.37081021531248853,
+      "weighted_f1": 0.41153290019698774,
+      "log_loss": 1.064574562178444,
+      "brier_score": 0.6441958897315486,
+      "confusion_matrix": [
+        [
+          196,
+          87,
+          33
+        ],
+        [
+          141,
+          94,
+          34
+        ],
+        [
+          71,
+          51,
+          23
+        ]
+      ],
+      "precision_LOW": 0.4803921568627451,
+      "recall_LOW": 0.620253164556962,
+      "f1_LOW": 0.5414364640883977,
+      "precision_MED": 0.4051724137931034,
+      "recall_MED": 0.34944237918215615,
+      "f1_MED": 0.37524950099800397,
+      "precision_HIGH": 0.25555555555555554,
+      "recall_HIGH": 0.15862068965517243,
+      "f1_HIGH": 0.19574468085106383,
+      "roc_auc_ovr": 0.5633580506812681
+    }
+  }
+}
