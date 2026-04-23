@@ -1,36 +1,37 @@
+# @author: Inigo Martinez Jimenez
+# Minimal plotting helpers called by the training scripts.
+
+from __future__ import annotations
+
 from pathlib import Path
+
 import matplotlib.pyplot as plt
-import pandas as pd
 import numpy as np
 
 
-def save_loss_curve(train_losses: list[float], val_losses: list[float], output_path: Path) -> None:
-    output_path.parent.mkdir(parents=True, exist_ok=True)
+def save_loss_curve(train_losses: list, val_losses: list, path: Path | str) -> None:
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fig, ax = plt.subplots(figsize=(9, 4))
+    ax.plot(train_losses, label="Train")
+    ax.plot(val_losses, label="Val")
+    ax.set_xlabel("Epoch")
+    ax.set_ylabel("Loss")
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig(path, dpi=150)
+    plt.close(fig)
 
-    plt.figure(figsize=(8, 5))
-    plt.plot(train_losses, label="Train loss")
-    plt.plot(val_losses, label="Validation loss")
-    plt.xlabel("Epoch")
-    plt.ylabel("MSE loss")
-    plt.title("Baseline training curve")
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig(output_path)
-    plt.close()
 
-
-def save_prediction_plot(dates: np.ndarray, y_true: np.ndarray, y_pred: np.ndarray, output_path: Path) -> None:
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-
-    x_dates = pd.to_datetime(dates)
-
-    plt.figure(figsize=(12, 5))
-    plt.plot(x_dates, y_true, label="Actual")
-    plt.plot(x_dates, y_pred, label="Predicted")
-    plt.xlabel("Date")
-    plt.ylabel("Target")
-    plt.title("Baseline predictions vs actual values")
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig(output_path)
-    plt.close()
+def save_prediction_plot(dates, y_true, y_pred, path: Path | str) -> None:
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fig, ax = plt.subplots(figsize=(12, 4))
+    ax.plot(np.asarray(y_true), label="Actual", linewidth=1.2)
+    ax.plot(np.asarray(y_pred), label="Predicted", linewidth=1.2, linestyle="--")
+    ax.set_xlabel("Step")
+    ax.set_ylabel("Log-RV")
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig(path, dpi=150)
+    plt.close(fig)
