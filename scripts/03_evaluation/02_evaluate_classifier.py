@@ -1,6 +1,12 @@
 from pathlib import Path
 import sys
+import argparse
 import json
+
+ROOT_DIR = Path(__file__).resolve().parents[2]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.append(str(ROOT_DIR))
+
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
@@ -19,206 +25,346 @@ from src.evaluation.calibration_classification import (
     compute_reliability_data,
     plot_reliability_diagram,
 )
+from src.evaluation.reporting import (
+    print_header,
+    print_kv,
+    print_artifacts,
+    print_metric_block,
+)
 
-ROOT_DIR = Path(__file__).resolve().parents[2]
-if str(ROOT_DIR) not in sys.path:
-    sys.path.append(str(ROOT_DIR))
 
+CLASSIFICATION_METRIC_KEYS = [
+    "accuracy",
+    "balanced_accuracy",
+    "macro_f1",
+    "weighted_f1",
+    "log_loss",
+    "brier_score",
+    "precision_LOW",
+    "recall_LOW",
+    "f1_LOW",
+    "precision_MED",
+    "recall_MED",
+    "f1_MED",
+    "precision_HIGH",
+    "recall_HIGH",
+    "f1_HIGH",
+    "roc_auc_ovr",
+]
+
+UNCERTAINTY_METRIC_KEYS = [
+    "H_total_mean",
+    "H_total_std",
+    "H_total_cv",
+    "corr_H_error",
+    "auroc_H_as_error_det",
+    "acc_low_uncertainty_q1",
+    "acc_high_uncertainty_q4",
+]
 
 SANITY_THRESHOLDS = {
-    "H_total_cv":           0.20,
-    "corr_H_error":         0.25,
+    "H_total_cv": 0.20,
+    "corr_H_error": 0.25,
     "auroc_H_as_error_det": 0.60,
 }
 
 
-def make_loader(dataset, batch_size: int, num_workers: int) -> DataLoader:
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Evaluate baseline and Bayesian LSTM classifiers.")
+    parser.add_argument(
+        "--config",
+        type=str,
+        default="config/config.yaml",
+        help="Path to config file, relative to project root or absolute.",
+    )
+    return parser.parse_args()
+
+
+def make_loader(dataset: ClassificationWindowDataset, batch_size: int, num_workers: int) -> DataLoader:
     return DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
 
 
-def load_bayesian_clf_model(checkpoint_path: Path, device: torch.device):
-    ckpt = torch.load(checkpoint_path, map_location=device, weights_only=True)
+def load_bayesian_clf_model(checkpoint_path: Path, device: torch.device) -> tuple[BayesianLSTMClassifier, dict]:
+    checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=True)
     model = BayesianLSTMClassifier(
-        n_features=ckpt["n_features"],
-        hidden=ckpt["hidden_size"],
-        num_layers=ckpt["num_layers"],
-        dense=ckpt["dense_size"],
-        dropout=ckpt["dropout"],
-        n_classes=ckpt["n_classes"],
+        n_features=checkpoint["n_features"],
+        hidden=checkpoint["hidden_size"],
+        num_layers=checkpoint["num_layers"],
+        dense=checkpoint["dense_size"],
+        dropout=checkpoint["dropout"],
+        n_classes=checkpoint["n_classes"],
     ).to(device)
-    model.load_state_dict(ckpt["model_state_dict"])
+    model.load_state_dict(checkpoint["model_state_dict"])
     model.eval()
-    return model, ckpt
+    return model, checkpoint
 
 
-def load_baseline_clf_model(checkpoint_path: Path, device: torch.device):
-    ckpt = torch.load(checkpoint_path, map_location=device, weights_only=True)
+def load_baseline_clf_model(checkpoint_path: Path, device: torch.device) -> tuple[LSTMClassifier, dict]:
+    checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=True)
     model = LSTMClassifier(
-        n_features=ckpt["n_features"],
-        hidden=ckpt["hidden_size"],
-        num_layers=ckpt["num_layers"],
-        dense=ckpt["dense_size"],
-        n_classes=ckpt["n_classes"],
+        n_features=checkpoint["n_features"],
+        hidden=checkpoint["hidden_size"],
+        num_layers=checkpoint["num_layers"],
+        dense=checkpoint["dense_size"],
+        n_classes=checkpoint["n_classes"],
     ).to(device)
-    model.load_state_dict(ckpt["model_state_dict"])
+    model.load_state_dict(checkpoint["model_state_dict"])
     model.eval()
-    return model, ckpt
+    return model, checkpoint
 
 
-def run_sanity_checks(unc_val: dict) -> bool:
-    print("\n--- Cortafuegos: sanity checks sobre val (Bayesiano) ---")
-    passed = True
+def build_sanity_report(unc_val: dict) -> tuple[dict, bool]:
+    report = {}
+    all_pass = True
+
     for key, threshold in SANITY_THRESHOLDS.items():
-        value = unc_val.get(key, float("nan"))
-        ok = not np.isnan(value) and value >= threshold
-        print(f"  {key}: {value:.4f} >= {threshold} -> {'OK' if ok else 'FAIL'}")
-        if not ok:
-            passed = False
-    if not passed:
-        print("  ADVERTENCIA: hay checks fallidos. Revisar antes de confiar en resultados de test.")
-    else:
-        print("  Todos los checks superados. Procediendo a test.")
-    return passed
+        value = float(unc_val.get(key, float("nan")))
+        passed = not np.isnan(value) and value >= threshold
+
+        report[key] = {
+            "value": value,
+            "threshold": threshold,
+            "passed": passed,
+        }
+
+        if not passed:
+            all_pass = False
+
+    return report, all_pass
 
 
-def _make_serializable(d: dict) -> dict:
-    out = {}
-    for k, v in d.items():
-        if isinstance(v, np.integer):   out[k] = int(v)
-        elif isinstance(v, np.floating): out[k] = float(v)
-        elif isinstance(v, np.ndarray):  out[k] = v.tolist()
-        else:                            out[k] = v
-    return out
-
-
-def _print_metrics(title: str, metrics: dict, unc: dict | None = None, ece: float | None = None) -> None:
+def print_sanity_block(title: str, sanity_report: dict, passed: bool) -> None:
     print(f"\n{title}")
-    print(f"  Accuracy:          {metrics['accuracy']:.4f}")
-    print(f"  Balanced accuracy: {metrics['balanced_accuracy']:.4f}  <- metrica principal")
-    print(f"  Macro F1:          {metrics['macro_f1']:.4f}")
-    print(f"  Log-loss:          {metrics['log_loss']:.4f}")
-    print(f"  Brier score:       {metrics['brier_score']:.4f}")
-    if ece is not None:
-        print(f"  ECE:               {ece:.4f}  (umbral < 0.08)")
-    print(f"  Recall LOW:        {metrics['recall_LOW']:.4f}")
-    print(f"  Recall MED:        {metrics['recall_MED']:.4f}")
-    print(f"  Recall HIGH:       {metrics['recall_HIGH']:.4f}  <- mas importante semaforo")
-    print(f"  ROC-AUC ovr:       {metrics['roc_auc_ovr']:.4f}")
-    print(f"  Confusion matrix (filas=real, cols=pred):")
-    for i, row in enumerate(metrics["confusion_matrix"]):
-        label = {0: "LOW ", 1: "MED ", 2: "HIGH"}[i]
-        print(f"    {label}: {row}")
-    if unc is not None:
-        print(f"  H_total CV:        {unc['H_total_cv']:.4f}  (umbral > 0.20)")
-        print(f"  corr(H, error):    {unc['corr_H_error']:.4f}  (umbral > 0.25)")
-        print(f"  AUROC H->error:    {unc['auroc_H_as_error_det']:.4f}  (umbral > 0.60)")
-        print(f"  Acc Q1 (baja inc): {unc['acc_low_uncertainty_q1']:.4f}")
-        print(f"  Acc Q4 (alta inc): {unc['acc_high_uncertainty_q4']:.4f}")
+    print("-" * 80)
+    print(f"{'Check':<28}{'Value':>12}{'Threshold':>14}{'Status':>10}")
+    for key in ("H_total_cv", "corr_H_error", "auroc_H_as_error_det"):
+        row = sanity_report[key]
+        status = "PASS" if row["passed"] else "FAIL"
+        print(
+            f"{key:<28}"
+            f"{row['value']:>12.4f}"
+            f"{row['threshold']:>14.4f}"
+            f"{status:>10}"
+        )
+    print(f"\nOverall status: {'PASS' if passed else 'FAIL'}")
+
+
+def print_confusion_matrix(title: str, matrix: list[list[int]]) -> None:
+    print(f"\n{title}")
+    print("-" * 80)
+    print(f"{'':<12}{'Pred LOW':>10}{'Pred MED':>10}{'Pred HIGH':>12}")
+    labels = ("True LOW", "True MED", "True HIGH")
+    for label, row in zip(labels, matrix):
+        print(f"{label:<12}{row[0]:>10d}{row[1]:>10d}{row[2]:>12d}")
+
+
+def _make_serializable(obj):
+    if isinstance(obj, np.integer):
+        return int(obj)
+    if isinstance(obj, np.floating):
+        return float(obj)
+    if isinstance(obj, np.ndarray):
+        return obj.tolist()
+    if isinstance(obj, dict):
+        return {k: _make_serializable(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_make_serializable(v) for v in obj]
+    return obj
 
 
 if __name__ == "__main__":
-    cfg         = load_config(ROOT_DIR / "config" / "config.yaml")
-    device      = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    args = parse_args()
 
-    splits_dir  = ROOT_DIR / cfg["paths"]["splits"]
-    models_dir  = ROOT_DIR / cfg["paths"]["clf_models"]
+    config_path = Path(args.config)
+    if not config_path.is_absolute():
+        config_path = ROOT_DIR / config_path
+
+    cfg = load_config(config_path)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    splits_dir = ROOT_DIR / cfg["paths"]["splits"]
+    models_dir = ROOT_DIR / cfg["paths"]["clf_models"]
     figures_dir = ROOT_DIR / cfg["paths"]["clf_figures"]
     results_dir = ROOT_DIR / cfg["paths"]["clf_results"]
-    results_dir.mkdir(parents=True, exist_ok=True)
+
     figures_dir.mkdir(parents=True, exist_ok=True)
+    results_dir.mkdir(parents=True, exist_ok=True)
 
-    batch_size  = cfg["classifier_training"]["batch_size"]
+    batch_size = cfg["classifier_training"]["batch_size"]
     num_workers = cfg["classifier_training"]["num_workers"]
-    mc_samples  = cfg["classifier_inference"]["mc_samples"]
-    n_classes   = cfg["classification"]["n_classes"]
+    mc_samples = cfg["classifier_inference"]["mc_samples"]
+    n_classes = cfg["classification"]["n_classes"]
 
-    val_dataset  = ClassificationWindowDataset.from_npz(splits_dir / cfg["paths"]["val_clf_windows_filename"])
-    test_dataset = ClassificationWindowDataset.from_npz(splits_dir / cfg["paths"]["test_clf_windows_filename"])
-    val_loader   = make_loader(val_dataset,  batch_size, num_workers)
-    test_loader  = make_loader(test_dataset, batch_size, num_workers)
-
-    # ── BAYESIAN ─────────────────────────────────────────────────────────────────
-    bayes_model, bayes_ckpt = load_bayesian_clf_model(
-        models_dir / cfg["paths"]["bayesian_clf_checkpoint"], device
+    val_dataset = ClassificationWindowDataset.from_npz(
+        splits_dir / cfg["paths"]["val_clf_windows_filename"]
+    )
+    test_dataset = ClassificationWindowDataset.from_npz(
+        splits_dir / cfg["paths"]["test_clf_windows_filename"]
     )
 
-    bayes_val  = predict_bayesian(bayes_model, val_loader,  device, T=mc_samples)
+    val_loader = make_loader(val_dataset, batch_size, num_workers)
+    test_loader = make_loader(test_dataset, batch_size, num_workers)
+
+    bayesian_checkpoint_path = models_dir / cfg["paths"]["bayesian_clf_checkpoint"]
+    baseline_checkpoint_path = models_dir / cfg["paths"]["baseline_clf_checkpoint"]
+
+    bayesian_reliability_path = figures_dir / cfg["paths"].get(
+        "bayesian_clf_reliability_diagram_filename",
+        "bayesian_clf_reliability_diagram.png",
+    )
+    baseline_reliability_path = figures_dir / cfg["paths"].get(
+        "baseline_clf_reliability_diagram_filename",
+        "baseline_clf_reliability_diagram.png",
+    )
+    evaluation_results_path = results_dir / cfg["paths"].get(
+        "evaluation_results_classifier_filename",
+        "evaluation_results_classifier.json",
+    )
+
+    bayes_model, bayes_ckpt = load_bayesian_clf_model(bayesian_checkpoint_path, device)
+
+    bayes_val = predict_bayesian(bayes_model, val_loader, device, T=mc_samples)
     bayes_test = predict_bayesian(bayes_model, test_loader, device, T=mc_samples)
 
-    unc_val    = compute_uncertainty_metrics(bayes_val["y_true"], bayes_val["y_pred"], bayes_val["total_entropy"])
-    sanity_ok  = run_sanity_checks(unc_val)
+    unc_val = compute_uncertainty_metrics(
+        bayes_val["y_true"],
+        bayes_val["y_pred"],
+        bayes_val["total_entropy"],
+    )
+    sanity_report, sanity_ok = build_sanity_report(unc_val)
 
-    tau_bayes  = calibrate_temperature_classification(bayes_val["y_true"], bayes_val["p_mean"])
-    print(f"\nBayesian tau: {tau_bayes:.4f}")
-    bayes_p_cal   = apply_temperature(bayes_test["p_mean"], tau_bayes)
+    tau_bayes = calibrate_temperature_classification(
+        bayes_val["y_true"],
+        bayes_val["p_mean"],
+    )
+    bayes_p_cal = apply_temperature(bayes_test["p_mean"], tau_bayes)
     bayes_pred_cal = np.argmax(bayes_p_cal, axis=-1)
 
-    bayes_metrics = compute_classification_metrics(bayes_test["y_true"], bayes_pred_cal, bayes_p_cal, n_classes)
-    bayes_unc     = compute_uncertainty_metrics(bayes_test["y_true"], bayes_pred_cal, bayes_test["total_entropy"])
-    bayes_ece     = compute_ece(bayes_test["y_true"], bayes_pred_cal, bayes_p_cal)
+    bayes_metrics = compute_classification_metrics(
+        bayes_test["y_true"],
+        bayes_pred_cal,
+        bayes_p_cal,
+        n_classes,
+    )
+    bayes_unc = compute_uncertainty_metrics(
+        bayes_test["y_true"],
+        bayes_pred_cal,
+        bayes_test["total_entropy"],
+    )
+    bayes_ece = compute_ece(
+        bayes_test["y_true"],
+        bayes_pred_cal,
+        bayes_p_cal,
+    )
 
     plot_reliability_diagram(
         compute_reliability_data(bayes_test["y_true"], bayes_pred_cal, bayes_p_cal),
         ece=bayes_ece,
-        title="Bayesian classifier — Reliability diagram",
-        save_path=figures_dir / "bayesian_clf_reliability_diagram.png",
+        title="Bayesian classifier reliability diagram",
+        save_path=bayesian_reliability_path,
     )
 
-    # ── BASELINE ─────────────────────────────────────────────────────────────────
-    base_model, base_ckpt = load_baseline_clf_model(
-        models_dir / cfg["paths"]["baseline_clf_checkpoint"], device
+    baseline_model, baseline_ckpt = load_baseline_clf_model(baseline_checkpoint_path, device)
+
+    baseline_val = predict_baseline(baseline_model, val_loader, device)
+    baseline_test = predict_baseline(baseline_model, test_loader, device)
+
+    tau_baseline = calibrate_temperature_classification(
+        baseline_val["y_true"],
+        baseline_val["p_mean"],
     )
+    baseline_p_cal = apply_temperature(baseline_test["p_mean"], tau_baseline)
+    baseline_pred_cal = np.argmax(baseline_p_cal, axis=-1)
 
-    base_val  = predict_baseline(base_model, val_loader,  device)
-    base_test = predict_baseline(base_model, test_loader, device)
-
-    tau_base  = calibrate_temperature_classification(base_val["y_true"], base_val["p_mean"])
-    print(f"Baseline tau:  {tau_base:.4f}")
-    base_p_cal    = apply_temperature(base_test["p_mean"], tau_base)
-    base_pred_cal = np.argmax(base_p_cal, axis=-1)
-
-    base_metrics  = compute_classification_metrics(base_test["y_true"], base_pred_cal, base_p_cal, n_classes)
-    base_ece      = compute_ece(base_test["y_true"], base_pred_cal, base_p_cal)
+    baseline_metrics = compute_classification_metrics(
+        baseline_test["y_true"],
+        baseline_pred_cal,
+        baseline_p_cal,
+        n_classes,
+    )
+    baseline_ece = compute_ece(
+        baseline_test["y_true"],
+        baseline_pred_cal,
+        baseline_p_cal,
+    )
 
     plot_reliability_diagram(
-        compute_reliability_data(base_test["y_true"], base_pred_cal, base_p_cal),
-        ece=base_ece,
-        title="Baseline classifier — Reliability diagram",
-        save_path=figures_dir / "baseline_clf_reliability_diagram.png",
+        compute_reliability_data(baseline_test["y_true"], baseline_pred_cal, baseline_p_cal),
+        ece=baseline_ece,
+        title="Baseline classifier reliability diagram",
+        save_path=baseline_reliability_path,
     )
 
-    # ── PRINT + SAVE ─────────────────────────────────────────────────────────────
-    print("\n" + "=" * 60)
-    print(f"Device: {device} | Test samples: {len(test_dataset)}")
-    counts = dict(zip(*np.unique(test_dataset.y_label, return_counts=True)))
-    print(f"Distribucion test: LOW={counts.get(0,0)} MED={counts.get(1,0)} HIGH={counts.get(2,0)}")
-
-    _print_metrics("BAYESIAN classifier:", bayes_metrics, unc=bayes_unc, ece=bayes_ece)
-    _print_metrics("BASELINE classifier:", base_metrics, ece=base_ece)
+    test_counts = dict(zip(*np.unique(test_dataset.y_label, return_counts=True)))
 
     results = {
-        "device":               str(device),
-        "test_samples":         len(test_dataset),
+        "device": str(device),
+        "validation_samples": len(val_dataset),
+        "test_samples": len(test_dataset),
+        "test_distribution": {
+            "LOW": int(test_counts.get(0, 0)),
+            "MED": int(test_counts.get(1, 0)),
+            "HIGH": int(test_counts.get(2, 0)),
+        },
         "sanity_checks_passed": sanity_ok,
+        "sanity_report": _make_serializable(sanity_report),
         "bayesian": {
-            "best_epoch":        bayes_ckpt["best_epoch"],
-            "best_val_ce":       float(bayes_ckpt["best_val_loss"]),
-            "temperature_tau":   tau_bayes,
-            "ece":               bayes_ece,
-            "global_metrics":    _make_serializable(bayes_metrics),
+            "best_epoch": int(bayes_ckpt["best_epoch"]),
+            "best_val_ce": float(bayes_ckpt["best_val_loss"]),
+            "temperature_tau": float(tau_bayes),
+            "ece": float(bayes_ece),
+            "checkpoint_path": str(bayesian_checkpoint_path),
+            "reliability_diagram_path": str(bayesian_reliability_path),
+            "global_metrics": _make_serializable(bayes_metrics),
             "uncertainty_metrics": _make_serializable(bayes_unc),
         },
         "baseline": {
-            "best_epoch":      base_ckpt["best_epoch"],
-            "best_val_ce":     float(base_ckpt["best_val_loss"]),
-            "temperature_tau": tau_base,
-            "ece":             base_ece,
-            "global_metrics":  _make_serializable(base_metrics),
+            "best_epoch": int(baseline_ckpt["best_epoch"]),
+            "best_val_ce": float(baseline_ckpt["best_val_loss"]),
+            "temperature_tau": float(tau_baseline),
+            "ece": float(baseline_ece),
+            "checkpoint_path": str(baseline_checkpoint_path),
+            "reliability_diagram_path": str(baseline_reliability_path),
+            "global_metrics": _make_serializable(baseline_metrics),
         },
     }
 
-    results_path = results_dir / "evaluation_results_classifier.json"
-    with open(results_path, "w", encoding="utf-8") as f:
-        json.dump(results, f, indent=2)
+    with open(evaluation_results_path, "w", encoding="utf-8") as f:
+        json.dump(results, f, indent=4)
 
-    print(f"\nResultados guardados en: {results_path}")
+    print_header("RUN")
+    print_kv("Script", "Classification evaluation")
+    print_kv("Device", str(device))
+    print_kv("Validation samples", len(val_dataset))
+    print_kv("Test samples", len(test_dataset))
+    print_kv(
+        "Test distribution",
+        f"LOW={test_counts.get(0, 0)} | MED={test_counts.get(1, 0)} | HIGH={test_counts.get(2, 0)}",
+    )
+
+    print_header("MODEL SETUP")
+    print_kv("Bayesian checkpoint", str(bayesian_checkpoint_path))
+    print_kv("Baseline checkpoint", str(baseline_checkpoint_path))
+    print_kv("Bayesian tau", f"{tau_bayes:.4f}")
+    print_kv("Baseline tau", f"{tau_baseline:.4f}")
+    print_kv("MC samples", mc_samples)
+    print_kv("Classes", n_classes)
+
+    print_header("MAIN RESULTS")
+    print_metric_block("Bayesian | classification metrics", bayes_metrics, CLASSIFICATION_METRIC_KEYS)
+    print_kv("Bayesian ECE", f"{bayes_ece:.4f}")
+    print_metric_block("Baseline | classification metrics", baseline_metrics, CLASSIFICATION_METRIC_KEYS)
+    print_kv("Baseline ECE", f"{baseline_ece:.4f}")
+
+    print_header("DIAGNOSTICS")
+    print_sanity_block("Validation gate", sanity_report, sanity_ok)
+    print_metric_block("Bayesian | uncertainty metrics", bayes_unc, UNCERTAINTY_METRIC_KEYS)
+    print_confusion_matrix("Bayesian | confusion matrix", bayes_metrics["confusion_matrix"])
+    print_confusion_matrix("Baseline | confusion matrix", baseline_metrics["confusion_matrix"])
+
+    print_header("ARTIFACTS")
+    print_artifacts({
+        "Bayesian reliability diagram": str(bayesian_reliability_path),
+        "Baseline reliability diagram": str(baseline_reliability_path),
+        "Results JSON": str(evaluation_results_path),
+    })

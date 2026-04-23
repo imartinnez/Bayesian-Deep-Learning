@@ -73,7 +73,7 @@ har:
     - log_return_5d
     - hl_range
     - log_volume
-  horizon: 1
+  horizon: 5
   target_col: target_har
   epsilon_squared_return: 1.0e-12
   regime_thresholds_percentiles: [33, 67]

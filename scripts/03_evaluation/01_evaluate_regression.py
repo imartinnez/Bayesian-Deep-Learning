@@ -23,8 +23,31 @@ from src.evaluation.metrics import (
     compute_coverage,
     compute_sharpness,
 )
-from src.evaluation.calibration import compute_calibration_data, plot_calibration, calibrate_temperature
+from src.evaluation.calibration import (
+    compute_calibration_data,
+    plot_calibration,
+    calibrate_temperature,
+)
 from src.evaluation.regimes import classify_regimes, evaluate_by_regime
+from src.evaluation.reporting import (
+    print_header,
+    print_kv,
+    print_artifacts,
+    print_metric_block,
+    print_regime_block,
+)
+
+
+GLOBAL_METRIC_KEYS = [
+    "rmse",
+    "mae",
+    "nll",
+    "crps",
+    "coverage_80",
+    "coverage_90",
+    "coverage_95",
+    "sharpness_90",
+]
 
 
 def parse_args() -> argparse.Namespace:
@@ -81,30 +104,6 @@ def add_interval_90_metrics(metrics: dict, y_true: np.ndarray, y_mean: np.ndarra
     return metrics
 
 
-def print_global_metrics(title: str, metrics: dict) -> None:
-    print(title)
-    print(f"RMSE:         {metrics['rmse']:.6f}")
-    print(f"MAE:          {metrics['mae']:.6f}")
-    print(f"NLL:          {metrics['nll']:.6f}")
-    print(f"CRPS:         {metrics['crps']:.6f}")
-    print(f"Coverage 80%: {metrics['coverage_80']:.6f}")
-    print(f"Coverage 90%: {metrics['coverage_90']:.6f}")
-    print(f"Coverage 95%: {metrics['coverage_95']:.6f}")
-    print(f"Sharpness 90%:{metrics['sharpness_90']:.6f}")
-
-
-def print_regime_metrics(title: str, regime_results: dict) -> None:
-    print(title)
-    for regime_name in ("LOW", "MED", "HIGH"):
-        values = regime_results[regime_name]
-        print(
-            f"{regime_name:<4} | n={values['n_obs']:<4d} "
-            f"| coverage_90={values['coverage_90']:.6f} "
-            f"| crps={values['crps']:.6f} "
-            f"| sharpness_90={values['sharpness_90']:.6f} "
-            f"| nll={values['nll']:.6f}"
-        )
-
 def to_serializable_regime_metrics(regime_results: dict) -> dict:
     out = {}
     for regime_name, values in regime_results.items():
@@ -130,7 +129,10 @@ if __name__ == "__main__":
     splits_dir = ROOT_DIR / cfg["paths"]["splits"]
     models_dir = ROOT_DIR / cfg["paths"]["lstm_models"]
     figures_dir = ROOT_DIR / cfg["paths"]["lstm_figures"]
+    results_dir = ROOT_DIR / cfg["paths"]["lstm_results"]
+
     figures_dir.mkdir(parents=True, exist_ok=True)
+    results_dir.mkdir(parents=True, exist_ok=True)
 
     train_windows_path = splits_dir / cfg["paths"]["train_windows_filename"]
     val_windows_path = splits_dir / cfg["paths"]["val_windows_filename"]
@@ -147,6 +149,7 @@ if __name__ == "__main__":
         "baseline_calibration_plot_filename",
         "baseline_calibration_plot.png",
     )
+    evaluation_results_path = results_dir / cfg["paths"]["evaluation_results_filename"]
 
     batch_size = cfg["training"]["batch_size"]
     num_workers = cfg["training"]["num_workers"]
@@ -160,17 +163,13 @@ if __name__ == "__main__":
     test_loader = make_loader(test_dataset, batch_size=batch_size, num_workers=num_workers)
 
     bayesian_model, bayesian_checkpoint = load_bayesian_model(bayesian_checkpoint_path, device)
-    bayes_results = predict_bayesian(
+
+    bayes_test_results = predict_bayesian(
         model=bayesian_model,
         loader=test_loader,
         device=device,
         T=mc_samples,
     )
-
-    y_test = bayes_results["y_true"]
-    mu_bayes = bayes_results["predictive_mean"]
-    sigma_bayes = bayes_results["predictive_std"]
-
     bayes_val_results = predict_bayesian(
         model=bayesian_model,
         loader=val_loader,
@@ -178,14 +177,16 @@ if __name__ == "__main__":
         T=mc_samples,
     )
 
+    y_test = bayes_test_results["y_true"]
+    mu_bayes = bayes_test_results["predictive_mean"]
+    sigma_bayes = bayes_test_results["predictive_std"]
+
     tau = calibrate_temperature(
         y_true=bayes_val_results["y_true"],
         predictive_mean=bayes_val_results["predictive_mean"],
         predictive_std=bayes_val_results["predictive_std"],
     )
-    
-    print(f"Temperature scaling tau: {tau:.4f}")
-    sigma_bayes = sigma_bayes/tau
+    sigma_bayes = sigma_bayes / tau
 
     bayesian_global_metrics = compute_probabilistic_metrics(
         y_true=y_test,
@@ -253,40 +254,6 @@ if __name__ == "__main__":
         regimes=baseline_regimes,
     )
 
-    print("-" * 60)
-    print(f"Using device: {device}")
-    print(f"Train samples: {len(train_dataset)}")
-    print(f"Validation samples: {len(val_dataset)}")
-    print(f"Test samples: {len(test_dataset)}")
-    print(f"Train window shape: {train_dataset.X.shape}")
-    print(f"Validation window shape: {val_dataset.X.shape}")
-    print(f"Test window shape: {test_dataset.X.shape}")
-    print()
-
-    print(f"Bayesian best epoch: {bayesian_checkpoint['best_epoch']}")
-    print(f"Bayesian best validation NLL: {bayesian_checkpoint['best_val_loss']:.6f}")
-    print(f"Bayesian checkpoint: {bayesian_checkpoint_path}")
-    print(f"Bayesian calibration plot: {bayesian_calibration_plot_path}")
-    print_global_metrics("Bayesian global metrics:", bayesian_global_metrics)
-    print()
-    print_regime_metrics("Bayesian by regime:", bayesian_regime_metrics)
-    print()
-
-    print(f"Baseline best epoch: {baseline_checkpoint['best_epoch']}")
-    print(f"Baseline best validation loss: {baseline_checkpoint['best_val_loss']:.6f}")
-    print(f"Baseline checkpoint: {baseline_checkpoint_path}")
-    print(f"Baseline constant sigma from validation residuals: {sigma_baseline:.6f}")
-    print(f"Baseline calibration plot: {baseline_calibration_plot_path}")
-    print_global_metrics("Baseline global metrics:", baseline_global_metrics)
-    print()
-    print_regime_metrics("Baseline by regime:", baseline_regime_metrics)
-
-
-    results_dir = ROOT_DIR / cfg["paths"]["lstm_results"]
-    results_dir.mkdir(parents=True, exist_ok=True)
-
-    evaluation_results_path = results_dir / cfg["paths"]["evaluation_results_filename"]
-
     evaluation_summary = {
         "device": str(device),
         "temperature_scaling_tau": float(tau),
@@ -296,7 +263,6 @@ if __name__ == "__main__":
         "train_shape": list(train_dataset.X.shape),
         "validation_shape": list(val_dataset.X.shape),
         "test_shape": list(test_dataset.X.shape),
-
         "bayesian": {
             "best_epoch": int(bayesian_checkpoint["best_epoch"]),
             "best_validation_nll": float(bayesian_checkpoint["best_val_loss"]),
@@ -305,7 +271,6 @@ if __name__ == "__main__":
             "global_metrics": bayesian_global_metrics,
             "regime_metrics": to_serializable_regime_metrics(bayesian_regime_metrics),
         },
-
         "baseline": {
             "best_epoch": int(baseline_checkpoint["best_epoch"]),
             "best_validation_loss": float(baseline_checkpoint["best_val_loss"]),
@@ -320,4 +285,34 @@ if __name__ == "__main__":
     with open(evaluation_results_path, "w", encoding="utf-8") as f:
         json.dump(evaluation_summary, f, indent=4)
 
-    print(f"Evaluation summary saved to: {evaluation_results_path}")
+    print_header("RUN")
+    print_kv("Script", "Regression evaluation")
+    print_kv("Device", str(device))
+    print_kv("Train samples", len(train_dataset))
+    print_kv("Validation samples", len(val_dataset))
+    print_kv("Test samples", len(test_dataset))
+    print_kv("Train shape", list(train_dataset.X.shape))
+    print_kv("Validation shape", list(val_dataset.X.shape))
+    print_kv("Test shape", list(test_dataset.X.shape))
+
+    print_header("MODEL SETUP")
+    print_kv("Bayesian checkpoint", str(bayesian_checkpoint_path))
+    print_kv("Baseline checkpoint", str(baseline_checkpoint_path))
+    print_kv("Temperature tau", f"{tau:.4f}")
+    print_kv("Baseline sigma", f"{sigma_baseline:.4f}")
+    print_kv("MC samples", mc_samples)
+
+    print_header("MAIN RESULTS")
+    print_metric_block("Bayesian | global metrics", bayesian_global_metrics, GLOBAL_METRIC_KEYS)
+    print_metric_block("Baseline | global metrics", baseline_global_metrics, GLOBAL_METRIC_KEYS)
+
+    print_header("DIAGNOSTICS")
+    print_regime_block("Bayesian | by regime", bayesian_regime_metrics)
+    print_regime_block("Baseline | by regime", baseline_regime_metrics)
+
+    print_header("ARTIFACTS")
+    print_artifacts({
+        "Bayesian calibration plot": str(bayesian_calibration_plot_path),
+        "Baseline calibration plot": str(baseline_calibration_plot_path),
+        "Results JSON": str(evaluation_results_path),
+    })      

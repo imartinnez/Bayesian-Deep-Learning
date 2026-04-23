@@ -7,22 +7,23 @@ from sklearn.preprocessing import StandardScaler
 import joblib
 
 from src.data.download import load_config
+from src.data.target import add_future_vol_target
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 if str(ROOT_DIR) not in sys.path:
     sys.path.append(str(ROOT_DIR))
 
 
-def add_log_rv_har(df: pd.DataFrame, window: int, col_name: str) -> pd.DataFrame:
+def add_log_rv_har(df: pd.DataFrame, window: int, col_name: str, epsilon: float) -> pd.DataFrame:
     r_sq = df["log_return"].pow(2)
-    df[col_name] = np.log(r_sq.rolling(window).mean())
+    realized_vol = np.sqrt(r_sq.rolling(window=window, min_periods=window).mean())
+    df[col_name] = np.log(realized_vol.clip(lower=epsilon))
     return df
 
 
 def add_har_target(df: pd.DataFrame, horizon: int, epsilon: float) -> pd.DataFrame:
-    r_sq = df["log_return"].pow(2)
-    future_rv = r_sq.shift(-horizon)
-    df["target_har"] = np.log(future_rv + epsilon)
+    df = add_future_vol_target(df, horizon=horizon, target_col="target_har")
+    df["target_har"] = df["target_har"].clip(lower=np.log(epsilon))
     return df
 
 
@@ -31,9 +32,9 @@ def build_har_features(df: pd.DataFrame, cfg: dict) -> pd.DataFrame:
     epsilon = har_cfg["epsilon_squared_return"]
     horizon = har_cfg["horizon"]
 
-    df = add_log_rv_har(df, window=1,  col_name="log_rv_1d_har")
-    df = add_log_rv_har(df, window=5,  col_name="log_rv_5d_har")
-    df = add_log_rv_har(df, window=22, col_name="log_rv_22d_har")
+    df = add_log_rv_har(df, window=1,  col_name="log_rv_1d_har",  epsilon=epsilon)
+    df = add_log_rv_har(df, window=5,  col_name="log_rv_5d_har",  epsilon=epsilon)
+    df = add_log_rv_har(df, window=22, col_name="log_rv_22d_har", epsilon=epsilon)
 
     if "log_return" not in df.columns:
         df["log_return"] = np.log(df["close"] / df["close"].shift(1))
