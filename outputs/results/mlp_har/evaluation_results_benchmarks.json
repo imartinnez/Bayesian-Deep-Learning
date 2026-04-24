@@ -4,8 +4,8 @@
         "validation": 365,
         "test": 729
     },
-    "processed_dataset_path": "D:\\Bayesian-Deep-Learning\\data\\processed\\btcusdt_features.parquet",
-    "har_evaluation_path": "D:\\Bayesian-Deep-Learning\\outputs\\results\\mlp_har\\evaluation_results_har.json",
+    "processed_dataset_path": "C:\\Users\\i.martinez.jimenez\\OneDrive - Accenture\\Documents\\projects-personales\\BNN\\data\\processed\\btcusdt_features.parquet",
+    "har_evaluation_path": "C:\\Users\\i.martinez.jimenez\\OneDrive - Accenture\\Documents\\projects-personales\\BNN\\outputs\\results\\mlp_har\\evaluation_results_har.json",
     "benchmarks": {
         "har_ols": {
             "params": {
@@ -103,11 +103,11 @@
         }
     },
     "mlp_baseline_metrics": {
-        "rmse": 0.6152826159866422,
-        "mae": 0.4813242210445744,
+        "rmse": 0.6152826041619174,
+        "mae": 0.48132421057901265,
         "coverage": 0.9368998628257887,
-        "nll": 0.9334942776361497,
-        "crps": 0.34374157850288506,
+        "nll": 0.9334942578298323,
+        "crps": 0.3437415717076142,
         "sharpness": 2.3757955338804386,
         "coverage_80": 0.8093278463648834,
         "coverage_90": 0.897119341563786,
@@ -118,17 +118,17 @@
         "sigma_constant": 0.6060814261436462
     },
     "bayesian_mlp_metrics": {
-        "rmse": 0.5733869337142704,
-        "mae": 0.4539194138092596,
-        "coverage": 0.9794238683127572,
-        "nll": 0.8763183138870788,
-        "crps": 0.3230288707600272,
-        "sharpness": 2.6801030845292986,
-        "coverage_80": 0.8641975308641975,
-        "coverage_90": 0.9506172839506173,
-        "coverage_95": 0.9794238683127572,
-        "sharpness_80": 1.7524252133671008,
-        "sharpness_90": 2.249213411044571,
-        "sharpness_95": 2.6801030845292986
+        "rmse": 0.5743396048704992,
+        "mae": 0.45332766743190334,
+        "coverage": 0.9780521262002744,
+        "nll": 0.8761885185966376,
+        "crps": 0.32352750600293867,
+        "sharpness": 2.6779426479872557,
+        "coverage_80": 0.8628257887517147,
+        "coverage_90": 0.953360768175583,
+        "coverage_95": 0.9780521262002744,
+        "sharpness_80": 1.7510125798419165,
+        "sharpness_90": 2.247400315543833,
+        "sharpness_95": 2.6779426479872557
     }
 }

@@ -6,7 +6,7 @@ data:
 
 features:
   window: 30
-  horizon: 1
+  horizon: 5
   columns:
     - log_return
     - hl_range

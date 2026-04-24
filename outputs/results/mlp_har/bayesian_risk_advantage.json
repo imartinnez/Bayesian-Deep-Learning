@@ -5,50 +5,50 @@
         "test": 729
     },
     "risk_horizon_days": 5,
-    "device": "cuda",
-    "tau_bmlp_total": 1.3909638615733806,
-    "processed_dataset_path": "D:\\Bayesian-Deep-Learning\\data\\processed\\btcusdt_features.parquet",
-    "mlp_checkpoint_path": "D:\\Bayesian-Deep-Learning\\outputs\\models\\mlp_har\\MLP_baseline.pt",
-    "bayesian_mlp_checkpoint_path": "D:\\Bayesian-Deep-Learning\\outputs\\models\\mlp_har\\Bayesian_MLP.pt",
+    "device": "cpu",
+    "tau_bmlp_total": 1.3884762691412194,
+    "processed_dataset_path": "C:\\Users\\i.martinez.jimenez\\OneDrive - Accenture\\Documents\\projects-personales\\BNN\\data\\processed\\btcusdt_features.parquet",
+    "mlp_checkpoint_path": "C:\\Users\\i.martinez.jimenez\\OneDrive - Accenture\\Documents\\projects-personales\\BNN\\outputs\\models\\mlp_har\\MLP_baseline.pt",
+    "bayesian_mlp_checkpoint_path": "C:\\Users\\i.martinez.jimenez\\OneDrive - Accenture\\Documents\\projects-personales\\BNN\\outputs\\models\\mlp_har\\Bayesian_MLP.pt",
     "block_A_event_summary": [
         {
             "date": "2023-03-10",
             "label": "SVB / USDC depeg",
-            "epistemic_mean": 0.5624223953399052,
-            "ratio_to_baseline": 1.1745572573971899
+            "epistemic_mean": 0.5333244817459434,
+            "ratio_to_baseline": 1.112420709660589
         },
         {
             "date": "2023-06-06",
             "label": "SEC vs Binance/Coinbase",
-            "epistemic_mean": 0.47590907924908554,
-            "ratio_to_baseline": 0.9938837207138622
+            "epistemic_mean": 0.48464993724996197,
+            "ratio_to_baseline": 1.010894203408024
         },
         {
             "date": "2024-01-11",
             "label": "Spot BTC ETF approval",
-            "epistemic_mean": 0.45600889722727705,
-            "ratio_to_baseline": 0.9523243813082647
+            "epistemic_mean": 0.4498385698570491,
+            "ratio_to_baseline": 0.9382838370271182
         },
         {
             "date": "2024-03-14",
             "label": "BTC ATH ~$73k",
-            "epistemic_mean": 0.4065578300791104,
-            "ratio_to_baseline": 0.8490512714780422
+            "epistemic_mean": 0.4140020333244996,
+            "ratio_to_baseline": 0.8635351488161263
         },
         {
             "date": "2024-04-20",
             "label": "BTC halving",
-            "epistemic_mean": 0.44289249483904897,
-            "ratio_to_baseline": 0.9249322188629474
+            "epistemic_mean": 0.4523951101674255,
+            "ratio_to_baseline": 0.9436163287534206
         },
         {
             "date": "2024-08-05",
             "label": "Global vol selloff",
-            "epistemic_mean": 0.45985615892193654,
-            "ratio_to_baseline": 0.9603589638249114
+            "epistemic_mean": 0.47133006704596886,
+            "ratio_to_baseline": 0.9831113058061632
         }
     ],
-    "block_A_figure_path": "D:\\Bayesian-Deep-Learning\\outputs\\figures\\mlp_har\\block_A_epistemic_timeline.png",
+    "block_A_figure_path": "C:\\Users\\i.martinez.jimenez\\OneDrive - Accenture\\Documents\\projects-personales\\BNN\\outputs\\figures\\mlp_har\\block_A_epistemic_timeline.png",
     "block_B_conditional_coverage": {
         "HAR-OLS": {
             "level": 0.9,
@@ -247,15 +247,15 @@
             ],
             "mean_abs_err_by_decile": [
                 0.589311428180504,
-                0.45274844949686094,
-                0.6429945978856431,
-                0.6944871921274711,
-                0.46975591542453593,
-                0.4383710494380544,
-                0.38466265467748345,
-                0.4464235085833039,
-                0.3351831433890948,
-                0.3576095628864158
+                0.45274838744271023,
+                0.6429946044176589,
+                0.6944871562013839,
+                0.4697558729664328,
+                0.43837108209813375,
+                0.38466266447550723,
+                0.44642351511531975,
+                0.33518315318711855,
+                0.35760953308409343
             ],
             "cov_std_dev": 0.07255102836638552,
             "cov_max_deviation": 0.11917808219178083
@@ -264,46 +264,46 @@
             "level": 0.9,
             "n_bins": 10,
             "coverage_by_decile": [
-                0.8904109589041096,
-                0.9178082191780822,
-                0.9178082191780822,
-                0.958904109589041,
+                0.9041095890410958,
                 0.9315068493150684,
+                0.9041095890410958,
+                0.9178082191780822,
+                1.0,
                 0.958904109589041,
-                0.9863013698630136,
-                0.9863013698630136,
                 0.9726027397260274,
-                0.9722222222222222
+                0.9863013698630136,
+                0.9178082191780822,
+                0.9861111111111112
             ],
             "mean_sigma_by_decile": [
-                0.5315567774205614,
-                0.5833257416066191,
-                0.6125806820408772,
-                0.6383203395589905,
-                0.6605115586742358,
-                0.6793795967271926,
-                0.708202373384965,
-                0.7418595343370933,
-                0.7958417395463527,
-                0.9071702582445366
+                0.5343348076657148,
+                0.5844212743378153,
+                0.6132780398071138,
+                0.6377197282073856,
+                0.6620890493479806,
+                0.6826768162382125,
+                0.7081105424769277,
+                0.7430981046665378,
+                0.7987371417921375,
+                0.9112331295788335
             ],
             "mean_abs_err_by_decile": [
-                0.36731755711193753,
-                0.4071386358506142,
-                0.41482389464384045,
-                0.3708657333829277,
-                0.4430099869622893,
-                0.4266446137410443,
-                0.44137755001287593,
-                0.4802775221216409,
-                0.5680031698814301,
-                0.6095282589437052
+                0.3739409865627711,
+                0.3865627391701329,
+                0.4312352651802549,
+                0.4054939953324353,
+                0.39016865545161583,
+                0.4477910456793912,
+                0.49405435285280674,
+                0.4486598701871901,
+                0.5428722216076176,
+                0.5951701723950472
             ],
-            "cov_std_dev": 0.03123956008761974,
-            "cov_max_deviation": 0.08630136986301362
+            "cov_std_dev": 0.035064853148346876,
+            "cov_max_deviation": 0.09999999999999998
         }
     },
-    "block_B_figure_path": "D:\\Bayesian-Deep-Learning\\outputs\\figures\\mlp_har\\block_B_conditional_coverage.png",
+    "block_B_figure_path": "C:\\Users\\i.martinez.jimenez\\OneDrive - Accenture\\Documents\\projects-personales\\BNN\\outputs\\figures\\mlp_har\\block_B_conditional_coverage.png",
     "block_C_var99_backtest": {
         "HAR-OLS": {
             "kupiec": {
@@ -540,18 +540,18 @@
             "es_ratio": NaN
         },
         "MLP": {
-            "quantile_loss_99": -0.0019259788189637857,
-            "fz0_loss": -0.7879843901400784,
+            "quantile_loss_99": -0.0019259788927441135,
+            "fz0_loss": -0.7879773021727573,
             "es_empirical": 0.13899105234507722,
-            "es_predicted_mean": 0.17883988701639378,
-            "es_ratio": 0.7771815038797038
+            "es_predicted_mean": 0.1788398836368056,
+            "es_ratio": 0.7771815185663238
         },
         "BMLP": {
-            "quantile_loss_99": -0.0018795963192760302,
-            "fz0_loss": -0.01223308549411202,
+            "quantile_loss_99": -0.001853592839977729,
+            "fz0_loss": -1.872635308224808,
             "es_empirical": 0.17931543417094714,
-            "es_predicted_mean": 0.1729296912463121,
-            "es_ratio": 1.0369268162026584
+            "es_predicted_mean": 0.1729478071877496,
+            "es_ratio": 1.0368182001653536
         }
     }
 }
