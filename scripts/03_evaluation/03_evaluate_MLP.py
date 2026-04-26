@@ -8,6 +8,7 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.append(str(ROOT_DIR))
 
 import numpy as np
+import pandas as pd
 import torch
 from scipy.stats import spearmanr
 from torch.utils.data import DataLoader
@@ -167,40 +168,45 @@ def print_gate_block(title: str, gate: dict) -> None:
     print(f"\nOverall status: {overall}")
 
 
-def run_backtest(realized_rv: np.ndarray, signals: np.ndarray) -> dict:
-    realized_rv = np.asarray(realized_rv, dtype=float).reshape(-1)
-    signals = np.asarray(signals, dtype=object).reshape(-1)
+def run_backtest(log_returns: np.ndarray, signals: np.ndarray) -> dict:
+    rets = np.asarray(log_returns, dtype=float).reshape(-1)
+    sigs = np.asarray(signals, dtype=object).reshape(-1)
 
-    if realized_rv.shape != signals.shape:
-        raise ValueError("realized_rv and signals must share the same shape.")
-
-    signal_vol_stats = {}
-    for state in ("NORMAL", "ALERTA", "ESTRES"):
-        mask = signals == state
-        n_obs = int(np.sum(mask))
-        if n_obs > 0:
-            signal_vol_stats[state] = {
-                "n": n_obs,
-                "mean_rv": float(np.mean(realized_rv[mask])),
-                "std_rv": float(np.std(realized_rv[mask])),
-            }
+    if rets.shape != sigs.shape:
+        raise ValueError("log_returns and signals must share the same shape.")
 
     weights_map = {"NORMAL": 1.0, "ALERTA": 0.5, "ESTRES": 0.0}
-    weights = np.array([weights_map[state] for state in signals])
+    weights = np.array([weights_map[str(s)] for s in sigs], dtype=float)
 
-    vol_z = (realized_rv - realized_rv.mean()) / (realized_rv.std() + 1e-8)
-    daily_returns = -vol_z * weights
+    # Shift signals by 1 day: use yesterday's signal for today's position
+    weights_lagged = np.roll(weights, 1)
+    weights_lagged[0] = 1.0  # first day: no prior signal, fully invested
 
-    cumulative = np.cumsum(daily_returns)
-    sharpe = float(np.mean(daily_returns) / (np.std(daily_returns) + 1e-8) * np.sqrt(252))
-    peak = np.maximum.accumulate(cumulative)
-    max_drawdown = float(np.min(cumulative - peak))
+    strategy_rets = weights_lagged * rets
+    bnh_rets = rets.copy()
+
+    def _sharpe(r: np.ndarray) -> float:
+        return float(np.mean(r) / (np.std(r) + 1e-8) * np.sqrt(252))
+
+    def _max_drawdown(r: np.ndarray) -> float:
+        wealth = np.exp(np.cumsum(r))
+        peak = np.maximum.accumulate(wealth)
+        return float(np.min((wealth - peak) / (peak + 1e-12)))
+
+    def _total_return(r: np.ndarray) -> float:
+        return float(np.exp(np.sum(r)) - 1)
 
     return {
-        "sharpe": sharpe,
-        "max_drawdown": max_drawdown,
-        "signal_vol_stats": signal_vol_stats,
-        "signal_counts": {state: values["n"] for state, values in signal_vol_stats.items()},
+        "strategy": {
+            "sharpe": _sharpe(strategy_rets),
+            "max_drawdown": _max_drawdown(strategy_rets),
+            "total_return": _total_return(strategy_rets),
+        },
+        "buy_and_hold": {
+            "sharpe": _sharpe(bnh_rets),
+            "max_drawdown": _max_drawdown(bnh_rets),
+            "total_return": _total_return(bnh_rets),
+        },
     }
 
 
@@ -352,8 +358,12 @@ def print_semaphore_block(title: str, semaphore_meta: dict, semaphore_eval: dict
 def print_backtest_block(title: str, backtest: dict) -> None:
     print(f"\n{title}")
     print("-" * 80)
-    print_kv("Sharpe", f"{backtest['sharpe']:.4f}", indent=2)
-    print_kv("Max drawdown", f"{backtest['max_drawdown']:.4f}", indent=2)
+    s = backtest["strategy"]
+    b = backtest["buy_and_hold"]
+    print(f"{'':30}{'Strategy':>12}{'Buy & Hold':>12}")
+    print_kv("Sharpe",       f"{s['sharpe']:>12.4f}{b['sharpe']:>12.4f}", indent=2)
+    print_kv("Max drawdown", f"{s['max_drawdown']:>12.4f}{b['max_drawdown']:>12.4f}", indent=2)
+    print_kv("Total return", f"{s['total_return']:>12.2%}{b['total_return']:>12.2%}", indent=2)
 
 
 def print_selective_block(title: str, selective_summary: dict) -> None:
@@ -522,25 +532,43 @@ if __name__ == "__main__":
         regimes=bayesian_regimes,
     )
 
+    rv_history = np.concatenate([
+        np.exp(bayes_train["y_true"]),
+        np.exp(bayes_val["y_true"]),
+        np.exp(bayes_test["y_true"]),
+    ])
+
     signals, semaphore_meta = build_semaphore_risk(
         mu_pred=bayes_test["predictive_mean"],
         sigma_total=sigma_bayes_test,
         sigma_epist=sigma_epist_test,
         train_rv=np.exp(bayes_train["y_true"]),
-        sigma_epist_train=np.sqrt(np.clip(bayes_train["epistemic_uncertainty"], 0.0, None)),
+        sigma_epist_train=np.sqrt(np.clip(bayes_val["epistemic_uncertainty"], 0.0, None)),
         mu_val=bayes_val["predictive_mean"],
         sigma_total_val=sigma_bayes_val,
         sigma_epist_val=sigma_epist_val,
         val_rv=np.exp(bayes_val["y_true"]),
+        rv_history=rv_history,
+        rolling_window=504,
     )
     semaphore_eval = evaluate_spr_states(
         actual_rv=np.exp(bayes_test["y_true"]),
         predicted_states=signals,
-        umbral_alerta=semaphore_meta["umbral_alerta"],
-        umbral_estres=semaphore_meta["umbral_estres"],
+        umbral_alerta=semaphore_meta.get("umbral_alerta_series", semaphore_meta["umbral_alerta"]),
+        umbral_estres=semaphore_meta.get("umbral_estres_series", semaphore_meta["umbral_estres"]),
     )
 
-    backtest = run_backtest(realized_rv=np.exp(bayes_test["y_true"]), signals=signals)
+    processed_path = ROOT_DIR / cfg["paths"]["processed"] / cfg["paths"]["processed_filename"]
+    price_df = pd.read_parquet(processed_path)
+    price_df["date"] = pd.to_datetime(price_df["date"])
+    test_dates = pd.to_datetime(test_dataset.dates)
+    log_returns_test = (
+        price_df.set_index("date")
+        .loc[test_dates, "log_return"]
+        .values.astype(float)
+    )
+
+    backtest = run_backtest(log_returns=log_returns_test, signals=signals)
 
     selective_total = compute_selective_prediction_curve(
         y_true=bayes_test["y_true"],
@@ -618,10 +646,7 @@ if __name__ == "__main__":
             },
             "signal_rv_stats": to_serializable(semaphore_eval["signal_rv_stats"]),
         },
-        "backtest": {
-            "sharpe": backtest["sharpe"],
-            "max_drawdown": backtest["max_drawdown"],
-        },
+        "backtest": to_serializable(backtest),
     }
 
     with open(evaluation_results_path, "w", encoding="utf-8") as f:

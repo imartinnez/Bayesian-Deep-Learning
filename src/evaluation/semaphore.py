@@ -141,6 +141,38 @@ def compute_spr_thresholds(
     }
 
 
+def compute_rolling_rv_thresholds(
+    rv_full: np.ndarray,
+    n_target: int,
+    window: int = 252,
+    alerta_pct: float = 75.0,
+    estres_pct: float = 90.0,
+    min_obs: int = 63,
+) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Compute time-varying RV thresholds for the last n_target observations.
+    Each day t uses only rv_full[max(0, t-window):t] — purely causal, no lookahead.
+    """
+    rv = np.asarray(rv_full, dtype=float)
+    n = len(rv)
+    offset = n - n_target
+    umbral_alerta = np.empty(n_target)
+    umbral_estres = np.empty(n_target)
+
+    for i in range(n_target):
+        t = offset + i
+        start = max(0, t - window)
+        hist = rv[start:t]
+        if len(hist) < min_obs:
+            hist = rv[max(0, t - min_obs):t]
+        if len(hist) == 0:
+            hist = rv[:1]
+        umbral_alerta[i] = np.percentile(hist, alerta_pct)
+        umbral_estres[i] = np.percentile(hist, estres_pct)
+
+    return umbral_alerta, umbral_estres
+
+
 def realized_risk_states(
     rv_series: np.ndarray,
     umbral_alerta: float,
@@ -148,8 +180,8 @@ def realized_risk_states(
 ) -> dict:
     rv = _to_1d_float_array(rv_series, "rv_series")
     codes = np.zeros_like(rv, dtype=np.int64)
-    codes[rv > umbral_alerta] = 1
-    codes[rv > umbral_estres] = 2
+    codes[rv > np.asarray(umbral_alerta, dtype=float)] = 1
+    codes[rv > np.asarray(umbral_estres, dtype=float)] = 2
     return {
         "states": _codes_to_states(codes),
         "state_codes": codes,
@@ -168,8 +200,8 @@ def compute_exceedance_probabilities(
     if mu.shape != sigma.shape:
         raise ValueError("mu_pred and sigma_total must have the same shape.")
 
-    log_alerta = float(np.log(max(umbral_alerta, 1e-12)))
-    log_estres = float(np.log(max(umbral_estres, 1e-12)))
+    log_alerta = np.log(np.maximum(np.asarray(umbral_alerta, dtype=float), 1e-12))
+    log_estres = np.log(np.maximum(np.asarray(umbral_estres, dtype=float), 1e-12))
 
     z_alerta = (log_alerta - mu) / sigma
     z_estres = (log_estres - mu) / sigma
@@ -302,11 +334,16 @@ def tune_spr_decision_parameters(
     epist_scale_grid: tuple[float, ...] = (0.75, 1.00, 1.25, 1.50, 1.75, 2.00),
     stress_persistence_grid: tuple[int, ...] = (1, 2),
     stress_high_prob_scale_grid: tuple[float, ...] = (1.75, 2.00, 2.50),
+    umbral_alerta_val: np.ndarray | None = None,
+    umbral_estres_val: np.ndarray | None = None,
 ) -> dict:
     thresholds = compute_spr_thresholds(
         train_rv=train_rv,
         sigma_epist_train=sigma_epist_train,
     )
+
+    ua_val = umbral_alerta_val if umbral_alerta_val is not None else thresholds["umbral_alerta"]
+    ue_val = umbral_estres_val if umbral_estres_val is not None else thresholds["umbral_estres"]
 
     best: dict | None = None
     for prob_alerta_thr in prob_alerta_grid:
@@ -321,8 +358,8 @@ def tune_spr_decision_parameters(
                             mu_pred=mu_val,
                             sigma_total=sigma_total_val,
                             sigma_epist=sigma_epist_val,
-                            umbral_alerta=thresholds["umbral_alerta"],
-                            umbral_estres=thresholds["umbral_estres"],
+                            umbral_alerta=ua_val,
+                            umbral_estres=ue_val,
                             umbral_epist=thresholds["umbral_epist"],
                             prob_alerta_thr=prob_alerta_thr,
                             prob_estres_thr=prob_estres_thr,
@@ -333,8 +370,8 @@ def tune_spr_decision_parameters(
                         metrics = evaluate_spr_states(
                             actual_rv=val_rv,
                             predicted_states=spr["states"],
-                            umbral_alerta=thresholds["umbral_alerta"],
-                            umbral_estres=thresholds["umbral_estres"],
+                            umbral_alerta=ua_val,
+                            umbral_estres=ue_val,
                         )
 
                         n_unique = len(np.unique(spr["state_codes"]))
@@ -349,8 +386,8 @@ def tune_spr_decision_parameters(
                         alert_ceiling = min(max(1.4 * actual_alert_rate, alert_floor + 1e-8), 0.85)
 
                         rate_penalty = (
-                            0.50 * max(0.0, stress_floor - predicted_stress_rate)
-                            + 0.20 * max(0.0, predicted_stress_rate - stress_ceiling)
+                            0.30 * max(0.0, stress_floor - predicted_stress_rate)
+                            + 0.45 * max(0.0, predicted_stress_rate - stress_ceiling)
                             + 0.10 * max(0.0, alert_floor - predicted_alert_rate)
                             + 0.05 * max(0.0, predicted_alert_rate - alert_ceiling)
                         )
@@ -359,10 +396,11 @@ def tune_spr_decision_parameters(
                         persistence_penalty = 0.03 * max(0, stress_persistence - 1)
 
                         score = (
-                            0.55 * metrics["stress_metrics"]["f1"]
-                            + 0.20 * metrics["stress_metrics"]["recall"]
-                            + 0.15 * metrics["alert_metrics"]["f1"]
-                            + 0.10 * metrics["macro_f1"]
+                            0.45 * metrics["stress_metrics"]["f1"]
+                            + 0.10 * metrics["stress_metrics"]["recall"]
+                            + 0.10 * metrics["stress_metrics"]["precision"]
+                            + 0.20 * metrics["alert_metrics"]["f1"]
+                            + 0.15 * metrics["macro_f1"]
                             - rate_penalty
                             - diversity_penalty
                             - zero_stress_penalty
@@ -404,11 +442,38 @@ def build_semaphore_risk(
     sigma_epist_val: np.ndarray | None = None,
     val_rv: np.ndarray | None = None,
     decision_params: dict | None = None,
+    rv_history: np.ndarray | None = None,
+    rolling_window: int = 252,
 ) -> tuple[np.ndarray, dict]:
     thresholds = compute_spr_thresholds(
         train_rv=train_rv,
         sigma_epist_train=sigma_epist_train,
     )
+
+    n_test = len(mu_pred)
+
+    if rv_history is not None and val_rv is not None:
+        n_val = len(val_rv)
+        ua_val, ue_val = compute_rolling_rv_thresholds(
+            rv_full=rv_history[:-n_test],
+            n_target=n_val,
+            window=rolling_window,
+            alerta_pct=thresholds["alerta_pct"],
+            estres_pct=thresholds["estres_pct"],
+        )
+        ua_test, ue_test = compute_rolling_rv_thresholds(
+            rv_full=rv_history,
+            n_target=n_test,
+            window=rolling_window,
+            alerta_pct=thresholds["alerta_pct"],
+            estres_pct=thresholds["estres_pct"],
+        )
+        thresholds["umbral_alerta"] = float(np.mean(ua_test))
+        thresholds["umbral_estres"] = float(np.mean(ue_test))
+    else:
+        ua_val = ue_val = None
+        ua_test = thresholds["umbral_alerta"]
+        ue_test = thresholds["umbral_estres"]
 
     tuning = None
     if decision_params is None:
@@ -420,6 +485,8 @@ def build_semaphore_risk(
                 val_rv=val_rv,
                 train_rv=train_rv,
                 sigma_epist_train=sigma_epist_train,
+                umbral_alerta_val=ua_val,
+                umbral_estres_val=ue_val,
             )
             decision_params = {
                 "prob_alerta_thr": tuning["prob_alerta_thr"],
@@ -441,8 +508,8 @@ def build_semaphore_risk(
         mu_pred=mu_pred,
         sigma_total=sigma_total,
         sigma_epist=sigma_epist,
-        umbral_alerta=thresholds["umbral_alerta"],
-        umbral_estres=thresholds["umbral_estres"],
+        umbral_alerta=ua_test,
+        umbral_estres=ue_test,
         umbral_epist=thresholds["umbral_epist"],
         prob_alerta_thr=float(decision_params["prob_alerta_thr"]),
         prob_estres_thr=float(decision_params["prob_estres_thr"]),
@@ -465,6 +532,9 @@ def build_semaphore_risk(
         "q95_rv": spr["q95_rv"],
         "state_codes": spr["state_codes"],
     }
+    if rv_history is not None:
+        meta["umbral_alerta_series"] = ua_test
+        meta["umbral_estres_series"] = ue_test
     if tuning is not None:
         meta["tuning"] = tuning
     return spr["states"], meta

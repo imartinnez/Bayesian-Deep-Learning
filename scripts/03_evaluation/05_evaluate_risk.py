@@ -143,7 +143,7 @@ def load_bmlp_checkpoint(path: Path, device: torch.device) -> BayesianMLP:
 def sigma_return_from_logvol_gaussian(mu: np.ndarray, logvol_std: np.ndarray, horizon: int = 1) -> np.ndarray:
     mu = np.asarray(mu, dtype=float)
     logvol_std = np.clip(np.asarray(logvol_std, dtype=float), 0.0, None)
-    sigma_daily = np.exp(mu + logvol_std**2)
+    sigma_daily = np.exp(mu + logvol_std**2 / 2)
     return np.sqrt(float(horizon)) * sigma_daily
 
 

@@ -34,9 +34,12 @@ def enable_dropout(model: nn.Module) -> None:
     This is the standard MC Dropout trick: BatchNorm and other layers stay in
     eval mode, but Dropout layers are switched to train mode so they keep
     sampling masks at each forward pass.
+
+    nn.LSTM internal dropout is gated by the LSTM module's own training flag
+    (not by a child nn.Dropout), so it must be set explicitly here.
     """
     for module in model.modules():
-        if isinstance(module, nn.Dropout):
+        if isinstance(module, (nn.Dropout, nn.LSTM)):
             module.train()
 
 def train_one_epoch(

@@ -6,7 +6,7 @@
     },
     "risk_horizon_days": 5,
     "device": "cpu",
-    "tau_bmlp_total": 1.3884762691412194,
+    "tau_bmlp_total": 1.3891916592074853,
     "processed_dataset_path": "C:\\Users\\i.martinez.jimenez\\OneDrive - Accenture\\Documents\\projects-personales\\BNN\\data\\processed\\btcusdt_features.parquet",
     "mlp_checkpoint_path": "C:\\Users\\i.martinez.jimenez\\OneDrive - Accenture\\Documents\\projects-personales\\BNN\\outputs\\models\\mlp_har\\MLP_baseline.pt",
     "bayesian_mlp_checkpoint_path": "C:\\Users\\i.martinez.jimenez\\OneDrive - Accenture\\Documents\\projects-personales\\BNN\\outputs\\models\\mlp_har\\Bayesian_MLP.pt",
@@ -14,38 +14,38 @@
         {
             "date": "2023-03-10",
             "label": "SVB / USDC depeg",
-            "epistemic_mean": 0.5333244817459434,
-            "ratio_to_baseline": 1.112420709660589
+            "epistemic_mean": 0.5656660220720635,
+            "ratio_to_baseline": 1.1790328239525256
         },
         {
             "date": "2023-06-06",
             "label": "SEC vs Binance/Coinbase",
-            "epistemic_mean": 0.48464993724996197,
-            "ratio_to_baseline": 1.010894203408024
+            "epistemic_mean": 0.4862986572586819,
+            "ratio_to_baseline": 1.0136053020327622
         },
         {
             "date": "2024-01-11",
             "label": "Spot BTC ETF approval",
-            "epistemic_mean": 0.4498385698570491,
-            "ratio_to_baseline": 0.9382838370271182
+            "epistemic_mean": 0.4300067572679937,
+            "ratio_to_baseline": 0.8962745888169364
         },
         {
             "date": "2024-03-14",
             "label": "BTC ATH ~$73k",
-            "epistemic_mean": 0.4140020333244996,
-            "ratio_to_baseline": 0.8635351488161263
+            "epistemic_mean": 0.4051683936472847,
+            "ratio_to_baseline": 0.8445033229827065
         },
         {
             "date": "2024-04-20",
             "label": "BTC halving",
-            "epistemic_mean": 0.4523951101674255,
-            "ratio_to_baseline": 0.9436163287534206
+            "epistemic_mean": 0.4441932274997528,
+            "ratio_to_baseline": 0.9258438282738161
         },
         {
             "date": "2024-08-05",
             "label": "Global vol selloff",
-            "epistemic_mean": 0.47133006704596886,
-            "ratio_to_baseline": 0.9831113058061632
+            "epistemic_mean": 0.45760848828052,
+            "ratio_to_baseline": 0.9538056152386206
         }
     ],
     "block_A_figure_path": "C:\\Users\\i.martinez.jimenez\\OneDrive - Accenture\\Documents\\projects-personales\\BNN\\outputs\\figures\\mlp_har\\block_A_epistemic_timeline.png",
@@ -267,40 +267,40 @@
                 0.9041095890410958,
                 0.9315068493150684,
                 0.9041095890410958,
-                0.9178082191780822,
-                1.0,
-                0.958904109589041,
                 0.9726027397260274,
+                0.9452054794520548,
+                0.9315068493150684,
                 0.9863013698630136,
-                0.9178082191780822,
+                0.9863013698630136,
+                0.9452054794520548,
                 0.9861111111111112
             ],
             "mean_sigma_by_decile": [
-                0.5343348076657148,
-                0.5844212743378153,
-                0.6132780398071138,
-                0.6377197282073856,
-                0.6620890493479806,
-                0.6826768162382125,
-                0.7081105424769277,
-                0.7430981046665378,
-                0.7987371417921375,
-                0.9112331295788335
+                0.5329928174655285,
+                0.5827684282653333,
+                0.6149753425432019,
+                0.6378535847046828,
+                0.6602161098906119,
+                0.6813235757607711,
+                0.7083226524282796,
+                0.7441296870367375,
+                0.8000621724444086,
+                0.907965369015995
             ],
             "mean_abs_err_by_decile": [
-                0.3739409865627711,
-                0.3865627391701329,
-                0.4312352651802549,
-                0.4054939953324353,
-                0.39016865545161583,
-                0.4477910456793912,
-                0.49405435285280674,
-                0.4486598701871901,
-                0.5428722216076176,
-                0.5951701723950472
+                0.40501125784721165,
+                0.380668957696899,
+                0.4149945860119045,
+                0.3832719136153943,
+                0.42323557003401574,
+                0.5108370241325707,
+                0.41383599709780167,
+                0.4824303113634288,
+                0.5425454549251372,
+                0.6001257789088845
             ],
-            "cov_std_dev": 0.035064853148346876,
-            "cov_max_deviation": 0.09999999999999998
+            "cov_std_dev": 0.03063877816059516,
+            "cov_max_deviation": 0.08630136986301362
         }
     },
     "block_B_figure_path": "C:\\Users\\i.martinez.jimenez\\OneDrive - Accenture\\Documents\\projects-personales\\BNN\\outputs\\figures\\mlp_har\\block_B_conditional_coverage.png",
@@ -308,38 +308,174 @@
         "HAR-OLS": {
             "kupiec": {
                 "n": 729,
-                "exceptions": 5,
-                "rate_empirical": 0.006858710562414266,
+                "exceptions": 7,
+                "rate_empirical": 0.009602194787379973,
                 "rate_expected": 0.010000000000000009,
-                "LR_uc": 0.816602205985717,
-                "p_value": 0.36617547758310853,
+                "LR_uc": 0.01180895568120377,
+                "p_value": 0.9134650155857728,
                 "reject_at_5pct": false
             },
             "christoffersen": {
-                "LR_cc": 26.305186789915773,
-                "p_value": 1.9404446793824803e-06,
+                "LR_cc": 43.045567998399726,
+                "p_value": 4.495455119268854e-10,
                 "reject_at_5pct": true,
                 "uc": {
                     "n": 729,
-                    "exceptions": 5,
-                    "rate_empirical": 0.006858710562414266,
+                    "exceptions": 7,
+                    "rate_empirical": 0.009602194787379973,
                     "rate_expected": 0.010000000000000009,
-                    "LR_uc": 0.816602205985717,
-                    "p_value": 0.36617547758310853,
+                    "LR_uc": 0.01180895568120377,
+                    "p_value": 0.9134650155857728,
                     "reject_at_5pct": false
                 },
                 "ind": {
                     "n01": 2,
-                    "n11": 3,
-                    "pi_01": 0.0027662517289073307,
-                    "pi_11": 0.6,
-                    "LR_ind": 25.488584583930056,
-                    "p_value": 4.450081378948312e-07,
+                    "n11": 5,
+                    "pi_01": 0.0027739251040221915,
+                    "pi_11": 0.7142857142857143,
+                    "LR_ind": 43.03375904271852,
+                    "p_value": 5.380340617477941e-11,
                     "reject_at_5pct": true
                 }
             }
         },
         "EWMA(0.94)": {
+            "kupiec": {
+                "n": 729,
+                "exceptions": 7,
+                "rate_empirical": 0.009602194787379973,
+                "rate_expected": 0.010000000000000009,
+                "LR_uc": 0.01180895568120377,
+                "p_value": 0.9134650155857728,
+                "reject_at_5pct": false
+            },
+            "christoffersen": {
+                "LR_cc": 43.045567998399726,
+                "p_value": 4.495455119268854e-10,
+                "reject_at_5pct": true,
+                "uc": {
+                    "n": 729,
+                    "exceptions": 7,
+                    "rate_empirical": 0.009602194787379973,
+                    "rate_expected": 0.010000000000000009,
+                    "LR_uc": 0.01180895568120377,
+                    "p_value": 0.9134650155857728,
+                    "reject_at_5pct": false
+                },
+                "ind": {
+                    "n01": 2,
+                    "n11": 5,
+                    "pi_01": 0.0027739251040221915,
+                    "pi_11": 0.7142857142857143,
+                    "LR_ind": 43.03375904271852,
+                    "p_value": 5.380340617477941e-11,
+                    "reject_at_5pct": true
+                }
+            }
+        },
+        "GARCH(1,1)": {
+            "kupiec": {
+                "n": 729,
+                "exceptions": 0,
+                "rate_empirical": 0.0,
+                "rate_expected": 0.010000000000000009,
+                "LR_uc": 14.653389674405116,
+                "p_value": 0.00012920207654876226,
+                "reject_at_5pct": true
+            },
+            "christoffersen": {
+                "LR_cc": 14.653389674405116,
+                "p_value": 0.0006577439492811976,
+                "reject_at_5pct": true,
+                "uc": {
+                    "n": 729,
+                    "exceptions": 0,
+                    "rate_empirical": 0.0,
+                    "rate_expected": 0.010000000000000009,
+                    "LR_uc": 14.653389674405116,
+                    "p_value": 0.00012920207654876226,
+                    "reject_at_5pct": true
+                },
+                "ind": {
+                    "n01": 0,
+                    "n11": 0,
+                    "pi_01": 0.0,
+                    "pi_11": 0.0,
+                    "LR_ind": -0.0,
+                    "p_value": 1.0,
+                    "reject_at_5pct": false
+                }
+            }
+        },
+        "GJR-GARCH(1,1)": {
+            "kupiec": {
+                "n": 729,
+                "exceptions": 0,
+                "rate_empirical": 0.0,
+                "rate_expected": 0.010000000000000009,
+                "LR_uc": 14.653389674405116,
+                "p_value": 0.00012920207654876226,
+                "reject_at_5pct": true
+            },
+            "christoffersen": {
+                "LR_cc": 14.653389674405116,
+                "p_value": 0.0006577439492811976,
+                "reject_at_5pct": true,
+                "uc": {
+                    "n": 729,
+                    "exceptions": 0,
+                    "rate_empirical": 0.0,
+                    "rate_expected": 0.010000000000000009,
+                    "LR_uc": 14.653389674405116,
+                    "p_value": 0.00012920207654876226,
+                    "reject_at_5pct": true
+                },
+                "ind": {
+                    "n01": 0,
+                    "n11": 0,
+                    "pi_01": 0.0,
+                    "pi_11": 0.0,
+                    "LR_ind": -0.0,
+                    "p_value": 1.0,
+                    "reject_at_5pct": false
+                }
+            }
+        },
+        "MLP": {
+            "kupiec": {
+                "n": 729,
+                "exceptions": 4,
+                "rate_empirical": 0.0054869684499314125,
+                "rate_expected": 0.010000000000000009,
+                "LR_uc": 1.7933016350957303,
+                "p_value": 0.18052440859553764,
+                "reject_at_5pct": false
+            },
+            "christoffersen": {
+                "LR_cc": 18.29711241047798,
+                "p_value": 0.0001063732731043654,
+                "reject_at_5pct": true,
+                "uc": {
+                    "n": 729,
+                    "exceptions": 4,
+                    "rate_empirical": 0.0054869684499314125,
+                    "rate_expected": 0.010000000000000009,
+                    "LR_uc": 1.7933016350957303,
+                    "p_value": 0.18052440859553764,
+                    "reject_at_5pct": false
+                },
+                "ind": {
+                    "n01": 2,
+                    "n11": 2,
+                    "pi_01": 0.0027624309392265192,
+                    "pi_11": 0.5,
+                    "LR_ind": 16.50381077538225,
+                    "p_value": 4.855239248280352e-05,
+                    "reject_at_5pct": true
+                }
+            }
+        },
+        "BMLP": {
             "kupiec": {
                 "n": 729,
                 "exceptions": 6,
@@ -372,186 +508,50 @@
                     "reject_at_5pct": true
                 }
             }
-        },
-        "GARCH(1,1)": {
-            "kupiec": {
-                "n": 729,
-                "exceptions": 0,
-                "rate_empirical": 0.0,
-                "rate_expected": 0.010000000000000009,
-                "LR_uc": 14.653389674405116,
-                "p_value": 0.00012920207654876226,
-                "reject_at_5pct": true
-            },
-            "christoffersen": {
-                "LR_cc": 14.653389674405116,
-                "p_value": 0.0006577439492811976,
-                "reject_at_5pct": true,
-                "uc": {
-                    "n": 729,
-                    "exceptions": 0,
-                    "rate_empirical": 0.0,
-                    "rate_expected": 0.010000000000000009,
-                    "LR_uc": 14.653389674405116,
-                    "p_value": 0.00012920207654876226,
-                    "reject_at_5pct": true
-                },
-                "ind": {
-                    "n01": 0,
-                    "n11": 0,
-                    "pi_01": 0.0,
-                    "pi_11": 0.0,
-                    "LR_ind": -0.0,
-                    "p_value": 1.0,
-                    "reject_at_5pct": false
-                }
-            }
-        },
-        "GJR-GARCH(1,1)": {
-            "kupiec": {
-                "n": 729,
-                "exceptions": 0,
-                "rate_empirical": 0.0,
-                "rate_expected": 0.010000000000000009,
-                "LR_uc": 14.653389674405116,
-                "p_value": 0.00012920207654876226,
-                "reject_at_5pct": true
-            },
-            "christoffersen": {
-                "LR_cc": 14.653389674405116,
-                "p_value": 0.0006577439492811976,
-                "reject_at_5pct": true,
-                "uc": {
-                    "n": 729,
-                    "exceptions": 0,
-                    "rate_empirical": 0.0,
-                    "rate_expected": 0.010000000000000009,
-                    "LR_uc": 14.653389674405116,
-                    "p_value": 0.00012920207654876226,
-                    "reject_at_5pct": true
-                },
-                "ind": {
-                    "n01": 0,
-                    "n11": 0,
-                    "pi_01": 0.0,
-                    "pi_11": 0.0,
-                    "LR_ind": -0.0,
-                    "p_value": 1.0,
-                    "reject_at_5pct": false
-                }
-            }
-        },
-        "MLP": {
-            "kupiec": {
-                "n": 729,
-                "exceptions": 3,
-                "rate_empirical": 0.00411522633744856,
-                "rate_expected": 0.010000000000000009,
-                "LR_uc": 3.278102764201684,
-                "p_value": 0.07021004756708193,
-                "reject_at_5pct": false
-            },
-            "christoffersen": {
-                "LR_cc": 10.830195082055589,
-                "p_value": 0.004448903840933549,
-                "reject_at_5pct": true,
-                "uc": {
-                    "n": 729,
-                    "exceptions": 3,
-                    "rate_empirical": 0.00411522633744856,
-                    "rate_expected": 0.010000000000000009,
-                    "LR_uc": 3.278102764201684,
-                    "p_value": 0.07021004756708193,
-                    "reject_at_5pct": false
-                },
-                "ind": {
-                    "n01": 2,
-                    "n11": 1,
-                    "pi_01": 0.002758620689655172,
-                    "pi_11": 0.3333333333333333,
-                    "LR_ind": 7.552092317853905,
-                    "p_value": 0.005994043665473958,
-                    "reject_at_5pct": true
-                }
-            }
-        },
-        "BMLP": {
-            "kupiec": {
-                "n": 729,
-                "exceptions": 1,
-                "rate_empirical": 0.0013717421124828531,
-                "rate_expected": 0.010000000000000009,
-                "LR_uc": 8.661654280425548,
-                "p_value": 0.0032497613129163216,
-                "reject_at_5pct": true
-            },
-            "christoffersen": {
-                "LR_cc": 8.664405312929977,
-                "p_value": 0.013138575825498267,
-                "reject_at_5pct": true,
-                "uc": {
-                    "n": 729,
-                    "exceptions": 1,
-                    "rate_empirical": 0.0013717421124828531,
-                    "rate_expected": 0.010000000000000009,
-                    "LR_uc": 8.661654280425548,
-                    "p_value": 0.0032497613129163216,
-                    "reject_at_5pct": true
-                },
-                "ind": {
-                    "n01": 1,
-                    "n11": 0,
-                    "pi_01": 0.001375515818431912,
-                    "pi_11": 0.0,
-                    "LR_ind": 0.0027510325044293182,
-                    "p_value": 0.9581699067715908,
-                    "reject_at_5pct": false
-                }
-            }
         }
     },
     "block_D_es_gneiting": {
         "HAR-OLS": {
-            "quantile_loss_99": -0.002003116411563843,
-            "fz0_loss": 14.726107500562438,
-            "es_empirical": 0.12415160270410004,
-            "es_predicted_mean": 0.17323623170999375,
-            "es_ratio": 0.7166607209047131
+            "quantile_loss_99": -0.0018816743405257366,
+            "fz0_loss": 36.12654527496442,
+            "es_empirical": 0.12500882172829947,
+            "es_predicted_mean": 0.1445561571825667,
+            "es_ratio": 0.8647768740173413
         },
         "EWMA(0.94)": {
-            "quantile_loss_99": -0.002172824217891221,
-            "fz0_loss": 18.803261440846843,
-            "es_empirical": 0.12016457470521631,
-            "es_predicted_mean": 0.18742960669718947,
-            "es_ratio": 0.6411184274603623
+            "quantile_loss_99": -0.0020183265622896766,
+            "fz0_loss": 42.40642475679247,
+            "es_empirical": 0.12500882172829947,
+            "es_predicted_mean": 0.1550774377559029,
+            "es_ratio": 0.806105798092096
         },
         "GARCH(1,1)": {
-            "quantile_loss_99": -0.002684030744159052,
-            "fz0_loss": -2.3601855728382177,
+            "quantile_loss_99": -0.002243067148380178,
+            "fz0_loss": -2.548702321157097,
             "es_empirical": NaN,
-            "es_predicted_mean": 0.2579164262030259,
+            "es_predicted_mean": 0.21360293650638867,
             "es_ratio": NaN
         },
         "GJR-GARCH(1,1)": {
-            "quantile_loss_99": -0.0026579147708909916,
-            "fz0_loss": -2.3697070663231248,
+            "quantile_loss_99": -0.0022159063692284587,
+            "fz0_loss": -2.560856579694008,
             "es_empirical": NaN,
-            "es_predicted_mean": 0.25529196939205556,
+            "es_predicted_mean": 0.21087348464547837,
             "es_ratio": NaN
         },
         "MLP": {
-            "quantile_loss_99": -0.0019259788927441135,
-            "fz0_loss": -0.7879773021727573,
-            "es_empirical": 0.13899105234507722,
-            "es_predicted_mean": 0.1788398836368056,
-            "es_ratio": 0.7771815185663238
+            "quantile_loss_99": -0.0017192395432519662,
+            "fz0_loss": 7.746766864715865,
+            "es_empirical": 0.131441147403761,
+            "es_predicted_mean": 0.1488328037114042,
+            "es_ratio": 0.8831463503075124
         },
         "BMLP": {
-            "quantile_loss_99": -0.001853592839977729,
-            "fz0_loss": -1.872635308224808,
-            "es_empirical": 0.17931543417094714,
-            "es_predicted_mean": 0.1729478071877496,
-            "es_ratio": 1.0368182001653536
+            "quantile_loss_99": -0.001672908437525861,
+            "fz0_loss": 15.571669819598823,
+            "es_empirical": 0.13001138803210668,
+            "es_predicted_mean": 0.1364450936689883,
+            "es_ratio": 0.9528476586157829
         }
     }
 }
