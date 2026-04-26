@@ -1,6 +1,6 @@
 {
     "device": "cpu",
-    "temperature_scaling_tau": 1.3995148603790186,
+    "temperature_scaling_tau": 1.4115012539479053,
     "train_samples": 1412,
     "validation_samples": 365,
     "test_samples": 730,
@@ -25,38 +25,38 @@
         "checkpoint_path": "C:\\Users\\i.martinez.jimenez\\OneDrive - Accenture\\Documents\\projects-personales\\BNN\\outputs\\models\\lstm\\Bayesian_LSTM.pt",
         "calibration_plot_path": "C:\\Users\\i.martinez.jimenez\\OneDrive - Accenture\\Documents\\projects-personales\\BNN\\outputs\\figures\\lstm\\bayesian_calibration_plot.png",
         "global_metrics": {
-            "rmse": 0.5776261369704109,
-            "mae": 0.4587666654292851,
-            "coverage": 0.9849315068493151,
-            "nll": 0.922049530344823,
-            "crps": 0.33071486581263065,
-            "sharpness": 2.905274224651415,
-            "coverage_80": 0.8972602739726028,
-            "coverage_90": 0.9602739726027397,
-            "coverage_95": 0.9849315068493151,
-            "sharpness_90": 2.4381829887695297
+            "rmse": 0.5804184091190177,
+            "mae": 0.46289340430906367,
+            "coverage": 0.9876712328767123,
+            "nll": 0.9241345272932284,
+            "crps": 0.33218893483075407,
+            "sharpness": 2.8846030481893674,
+            "coverage_80": 0.8958904109589041,
+            "coverage_90": 0.9534246575342465,
+            "coverage_95": 0.9876712328767123,
+            "sharpness_90": 2.420835190623672
         },
         "regime_metrics": {
             "LOW": {
                 "n_obs": 450,
-                "coverage_90": 0.9355555555555556,
-                "crps": 0.36947432998356255,
-                "sharpness_90": 2.4526493835331675,
-                "nll": 1.0094345078266145
+                "coverage_90": 0.9244444444444444,
+                "crps": 0.3737051031309496,
+                "sharpness_90": 2.4317745563973503,
+                "nll": 1.017438664471275
             },
             "MED": {
                 "n_obs": 218,
                 "coverage_90": 1.0,
-                "crps": 0.23481701359054666,
-                "sharpness_90": 2.42178233958988,
-                "nll": 0.720590849288258
+                "crps": 0.2337053972376171,
+                "sharpness_90": 2.4170170500212267,
+                "nll": 0.7173465639316473
             },
             "HIGH": {
                 "n_obs": 62,
                 "coverage_90": 1.0,
-                "crps": 0.3865853965786778,
-                "sharpness_90": 2.3908517609876996,
-                "nll": 0.9961584433049024
+                "crps": 0.3771427325761716,
+                "sharpness_90": 2.3548616430942766,
+                "nll": 0.9740202415303848
             }
         }
     },

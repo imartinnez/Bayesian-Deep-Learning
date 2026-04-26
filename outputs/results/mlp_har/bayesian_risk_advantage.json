@@ -6,7 +6,7 @@
     },
     "risk_horizon_days": 5,
     "device": "cpu",
-    "tau_bmlp_total": 1.3893524186474595,
+    "tau_bmlp_total": 1.3808020460750756,
     "processed_dataset_path": "C:\\Users\\i.martinez.jimenez\\OneDrive - Accenture\\Documents\\projects-personales\\BNN\\data\\processed\\btcusdt_features.parquet",
     "mlp_checkpoint_path": "C:\\Users\\i.martinez.jimenez\\OneDrive - Accenture\\Documents\\projects-personales\\BNN\\outputs\\models\\mlp_har\\MLP_baseline.pt",
     "bayesian_mlp_checkpoint_path": "C:\\Users\\i.martinez.jimenez\\OneDrive - Accenture\\Documents\\projects-personales\\BNN\\outputs\\models\\mlp_har\\Bayesian_MLP.pt",
@@ -14,38 +14,38 @@
         {
             "date": "2023-03-10",
             "label": "SVB / USDC depeg",
-            "epistemic_mean": 0.5619811920058086,
-            "ratio_to_baseline": 1.1731273270125497
+            "epistemic_mean": 0.5560964632370876,
+            "ratio_to_baseline": 1.1611254758715264
         },
         {
             "date": "2023-06-06",
             "label": "SEC vs Binance/Coinbase",
-            "epistemic_mean": 0.48106553150803105,
-            "ratio_to_baseline": 1.0042170968064263
+            "epistemic_mean": 0.4813096424624463,
+            "ratio_to_baseline": 1.0049711238812462
         },
         {
             "date": "2024-01-11",
             "label": "Spot BTC ETF approval",
-            "epistemic_mean": 0.44528820486774057,
-            "ratio_to_baseline": 0.9295324629321577
+            "epistemic_mean": 0.44676858507868134,
+            "ratio_to_baseline": 0.9328496407515637
         },
         {
             "date": "2024-03-14",
             "label": "BTC ATH ~$73k",
-            "epistemic_mean": 0.4084646575912977,
-            "ratio_to_baseline": 0.8526638591389418
+            "epistemic_mean": 0.40504964377727615,
+            "ratio_to_baseline": 0.845740786849722
         },
         {
             "date": "2024-04-20",
             "label": "BTC halving",
-            "epistemic_mean": 0.4398700875149053,
-            "ratio_to_baseline": 0.9182222240523017
+            "epistemic_mean": 0.4525162323851745,
+            "ratio_to_baseline": 0.9448506876113929
         },
         {
             "date": "2024-08-05",
             "label": "Global vol selloff",
-            "epistemic_mean": 0.4447474646525306,
-            "ratio_to_baseline": 0.928403675826288
+            "epistemic_mean": 0.4489812270852882,
+            "ratio_to_baseline": 0.9374696215870818
         }
     ],
     "block_A_figure_path": "C:\\Users\\i.martinez.jimenez\\OneDrive - Accenture\\Documents\\projects-personales\\BNN\\outputs\\figures\\mlp_har\\block_A_epistemic_timeline.png",
@@ -264,42 +264,42 @@
             "level": 0.9,
             "n_bins": 10,
             "coverage_by_decile": [
-                0.9041095890410958,
+                0.9178082191780822,
+                0.9178082191780822,
                 0.9452054794520548,
-                0.8767123287671232,
+                0.9178082191780822,
                 0.958904109589041,
                 0.9726027397260274,
-                0.9452054794520548,
-                0.9726027397260274,
                 1.0,
-                0.9452054794520548,
+                1.0,
+                0.958904109589041,
                 0.9722222222222222
             ],
             "mean_sigma_by_decile": [
-                0.5323167051832015,
-                0.5832580235061743,
-                0.6124994417955235,
-                0.63629885615449,
-                0.6602853696527624,
-                0.683232048330334,
-                0.710446193554676,
-                0.7428336011386308,
-                0.7991582854361746,
-                0.9061301239200582
+                0.5372521987948421,
+                0.5867995702235091,
+                0.6181407350032107,
+                0.6406968503402636,
+                0.6648605377359071,
+                0.6849129889455358,
+                0.7132391805249142,
+                0.7469527775280866,
+                0.8034101151111448,
+                0.910351330578461
             ],
             "mean_abs_err_by_decile": [
-                0.37146023889466817,
-                0.38355548265110756,
-                0.44556857085943435,
-                0.3848681785424624,
-                0.39587597055070023,
-                0.4850107248624493,
-                0.4382238958840986,
-                0.4409325790683627,
-                0.5771230804790995,
-                0.5941667521817838
+                0.39076878701931883,
+                0.3388768272111404,
+                0.43713470906897267,
+                0.4138931282974758,
+                0.4509408804963387,
+                0.4937502768591647,
+                0.33692584380018026,
+                0.5461929084593665,
+                0.5173350086148635,
+                0.6033983242787865
             ],
-            "cov_std_dev": 0.034111033143221496,
+            "cov_std_dev": 0.029866164147560957,
             "cov_max_deviation": 0.09999999999999998
         }
     },
@@ -547,11 +547,11 @@
             "es_ratio": 0.8831463503075124
         },
         "BMLP": {
-            "quantile_loss_99": -0.0016280717558376384,
-            "fz0_loss": 10.49765836555079,
-            "es_empirical": 0.13342684103620756,
-            "es_predicted_mean": 0.1364237745233605,
-            "es_ratio": 0.9780321758606689
+            "quantile_loss_99": -0.0016164869353843378,
+            "fz0_loss": 9.209848660469735,
+            "es_empirical": 0.13596777869636847,
+            "es_predicted_mean": 0.13660613464400234,
+            "es_ratio": 0.995327033084587
         }
     }
 }
