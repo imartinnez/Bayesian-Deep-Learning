@@ -1,3 +1,0 @@
-# @author: Inigo Martinez Jimenez
-
-
