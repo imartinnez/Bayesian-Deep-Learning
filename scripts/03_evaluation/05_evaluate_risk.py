@@ -512,11 +512,15 @@ if __name__ == "__main__":
     plt.close()
 
     alpha_var = 0.99
+    horizon = 5
+    stride = horizon  # non-overlapping windows eliminate artificial clustering
+    idx_nl = np.arange(0, len(r_h_test), stride)
+
     block_c: dict = {}
 
     for name in preds.keys():
         var99 = risk[name]["var_99"]
-        exceptions = r_h_test < -var99
+        exceptions = (r_h_test < -var99)[idx_nl]
         uc = kupiec_pof(exceptions, alpha_var)
         cc = christoffersen_cc(exceptions, alpha_var)
         block_c[name] = {
